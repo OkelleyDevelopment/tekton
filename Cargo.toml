@@ -2,16 +2,21 @@
 name = "tekton"
 version = "0.1.0"
 edition = "2021"
+authors = ["Nicholas O'Kelley"]
+repository = "https://github.com/OkelleyDevelopment/tekton"
+description = "A blazingly fast code snippet builder"
+readme = "README.md"
+license = "GPL-3.0"
+categories = ["command-line-utilities"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name="tekton"
+path="./src/main.rs"
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.48"
 regex = "1"
 
-crossterm= {version="0.25", features = [ "serde" ]}
-chrono={version = "0.4.22", features=["serde"]}
-rand = { version = "0.8.5", default-features = false, features = ["std"] }
-tui = { version = "0.19", default-features = false, features = ['crossterm', 'serde'] }
-thiserror = "1.0"
