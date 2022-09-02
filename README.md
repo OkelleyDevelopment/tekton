@@ -17,6 +17,12 @@ of this project is now to allow various snippet mappings to coexist.
 
 ## Project Execution
 
+### Manual
+
+1. Clone this repository
+2. Move into the project directory
+3. Run the following command:
+
 ```
 cargo run <.snippet file to convert> <path for JSON output (include .json)>
 
