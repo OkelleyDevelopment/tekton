@@ -4,6 +4,8 @@ Author(s): Nicholas O'Kelley
 
 Date: 2022-08-28
 
+NOTE: This is still a tool in alpha and might rapidly change.
+
 ## Motivation
 
 I needed a **blazingly fast** tool to speed up my ability to convert
