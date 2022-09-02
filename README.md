@@ -1,5 +1,7 @@
 # Tekton
 
+![Workflow](https://github.com/OkelleyDevelopment/tekton/actions/workflows/rust.yml/badge.svg)
+
 Author(s): Nicholas O'Kelley
 
 Date: 2022-08-28
