@@ -1,7 +1,14 @@
+//! Simple and easy to use Utilities
+//!
+//! Various Utilities that may be used throughout the CLI program
+//!
+
 use std::fs::File;
-use std::io::{self, prelude::*, BufReader};
+use std::io::{self, prelude::*, BufReader, Error};
 use std::path::Path;
 
+/// Function to retrive user input, looping until text is in the buffer
+/// and is not an empty line
 pub fn get_input() -> String {
     let mut input = String::new();
     while input == String::new() {
@@ -12,15 +19,17 @@ pub fn get_input() -> String {
     return input.trim().to_string();
 }
 
-pub fn read_lines(fname: &String) -> Vec<String> {
-    let file = File::open(fname.to_owned()).expect("no such file");
+/// Function to read the lines of a file and returns a Vec of Strings
+pub fn read_lines(fname: &String) -> Result<Vec<String>, Error> {
+    let file = File::open(fname)?;
     let buf = BufReader::new(file);
-    buf.lines()
+    Ok(buf
+        .lines()
         .map(|line| line.expect("Could not parse line"))
-        .collect()
+        .collect())
 }
-
-pub fn write_to_file(name: String, finished: String) {
+/// Function to write to a newly created file.
+pub fn write_to_file(name: String, finished: String) -> Option<()> {
     println!("Writing Snippets to file: {}", name);
     let mut outfile = File::create(Path::new("./").join(name))
         .unwrap_or_else(|err| panic!("Could not create the file {}", err));
@@ -28,4 +37,5 @@ pub fn write_to_file(name: String, finished: String) {
     outfile
         .write_all(finished.as_bytes())
         .unwrap_or_else(|err| panic!("Could not write the snippets {}", err));
+    Some(())
 }

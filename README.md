@@ -21,17 +21,15 @@ of this project is now to allow various snippet mappings to coexist.
 
 - `tekton <snippet file to convert> <json output file>`
 
-
 ## Future Goals
 
 These are current ideas I've got in mind, but there is currently not a
 definitive road map for which would finished first.
 
 - Provide options for snippets
-- A better cli interface
-- Allow users to switch JSON back to the `.snippet` format
+- ~~a better cli interface~~
+- Allow users to switch JSON back to the `vim-snippet` format
 - Edit descriptions?
-
 
 ## Acknowledgements
 

@@ -1,20 +1,21 @@
-pub mod errors;
 pub mod friendly;
 pub mod snippet;
 
-use self::{friendly::FriendlySnippet, snippet::Snippets};
-use crate::snippets::{errors::SnippetError, friendly::FriendlySnippetBody};
+use self::{friendly::FriendlySnippet, snippet::Snippet};
+use crate::snippets::friendly::FriendlySnippetBody;
 use crate::utils::get_input;
+use crate::errors::SnippetError;
 use regex::bytes::RegexSetBuilder;
 
+/// Escapes backslashes for the snippets to preserve strings
 pub fn standardize_string(line: String) -> String {
     let mut res = str::replace(&line, "\"", "\\\"");
     res = str::replace(&res, "\\t", "    ");
-    return String::from(res);
+    res
 }
 
-pub fn gen_snippet(lines: Vec<String>) -> Vec<Snippets> {
-    let mut snippets: Vec<Snippets> = Vec::new();
+pub fn gen_snippet(lines: Vec<String>) -> Vec<Snippet> {
+    let mut snippets: Vec<Snippet> = Vec::new();
 
     let set = RegexSetBuilder::new(&[r#"snippet ([a-zA-Z0-9]*)"#])
         .case_insensitive(true)
@@ -23,10 +24,11 @@ pub fn gen_snippet(lines: Vec<String>) -> Vec<Snippets> {
 
     for line in lines.iter() {
         if set.is_match(line.as_bytes()) {
-            let mut s = line.split(" ");
+            let mut s = line.split(' ');
             s.next();
             let name = s.next().unwrap().to_string();
-            let snip = Snippets::new(name, Vec::new());
+            let desc = s.next().unwrap_or("").to_string();
+            let snip = Snippet::new(name, Vec::new());
             snippets.push(snip);
         } else {
             let index = snippets.len() - 1;
@@ -34,10 +36,10 @@ pub fn gen_snippet(lines: Vec<String>) -> Vec<Snippets> {
             handle.body.push(standardize_string(line.to_string()));
         }
     }
-    return snippets;
+    snippets
 }
 
-pub fn gen_friendly_snippets(snips: Vec<Snippets>) -> Vec<FriendlySnippet> {
+pub fn gen_friendly_snippets(snips: Vec<Snippet>) -> Vec<FriendlySnippet> {
     let mut friendly_handle: Vec<FriendlySnippet> = Vec::new();
 
     for snippet in snips {
@@ -52,7 +54,7 @@ pub fn gen_friendly_snippets(snips: Vec<Snippets>) -> Vec<FriendlySnippet> {
         body.insert(0, first_line.trim_start().to_string());
         // --------------------------------------------------------------
         let description: String = String::new();
-        let name: String = String::from("snippet ".to_owned() + &prefix);
+        let name: String = "snippet ".to_owned() + &prefix;
         //println!("Name is now ---> {:?}", prefix);
         let friendly_body = FriendlySnippetBody::new(prefix, body, description);
         friendly_handle.push(FriendlySnippet {
@@ -64,17 +66,17 @@ pub fn gen_friendly_snippets(snips: Vec<Snippets>) -> Vec<FriendlySnippet> {
 }
 
 pub fn build_friendly_string(friendlies: Vec<FriendlySnippet>) -> Result<String, SnippetError> {
-    if friendlies.len() < 1 {
+    if friendlies.is_empty() {
         return Err(SnippetError::Reason("No snippets provided".to_string()));
     }
 
     let mut finished: String = String::from("{\n");
     let mut count: usize = 0;
     let mut length: usize = friendlies.len();
-    let target = length.clone();
+    let target = friendlies.len();
 
     for obj in friendlies {
-        count = count + 1;
+        count += 1;
         print!("\x1B[2J\x1B[1;1H"); // Clear terminal
         let snip = &serde_json::to_string_pretty(&obj.snip_body).unwrap();
         println!(
@@ -83,12 +85,12 @@ pub fn build_friendly_string(friendlies: Vec<FriendlySnippet>) -> Result<String,
         );
         finished = finished + "\"" + &get_input() + "\": " + snip;
         if length > 1 {
-            finished = finished + ",\n"
+            finished += ",\n"
         }
-        length = length - 1;
+        length -= 1;
     }
 
     print!("\x1B[2J\x1B[1;1H");
-    finished = finished + "\n}";
+    finished += "\n}";
     Ok(finished)
 }

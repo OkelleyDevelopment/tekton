@@ -1,6 +1,6 @@
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FriendlySnippet {
     pub name: String,
     pub snip_body: FriendlySnippetBody,
@@ -12,7 +12,7 @@ impl FriendlySnippet {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FriendlySnippetBody {
     pub prefix: String,
     pub body: Vec<String>,
