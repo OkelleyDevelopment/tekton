@@ -23,7 +23,7 @@ impl Snippet {
 
     /// Converts our vim snippet to a string
     pub fn display(self) -> String {
-        let mut s = "snippet ".to_string() + &self.prefix + "\n";
+        let mut s = "snippet ".to_string() + &self.prefix + &self.description + "\n";
 
         // Note: this is done in an attempt to remove the extra quotes needed in JSON
         s = str::replace(&s, "\"", "");
@@ -32,8 +32,7 @@ impl Snippet {
             let line = "\t".to_string() + &edited_item + "\n";
             s += &line;
         }
-
-        s + &self.description
+        s
     }
 }
 

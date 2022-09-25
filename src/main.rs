@@ -3,12 +3,13 @@ use std::path::Path;
 
 extern crate clap;
 use clap::Parser;
-use tekton::composer::compose_snippets;
+use tekton::composer::composer::composer;
 use tekton::errors::TektonError;
 use tekton::utils::write_to_file;
 
 /// Entry point to the CLI App
 fn main() -> Result<(), TektonError> {
+    // TODO: Rework this to be more concise
     let cli = Cli::parse();
     let res: Result<(String, String), TektonError> = parse_config(cli);
     match res {
@@ -20,7 +21,7 @@ fn main() -> Result<(), TektonError> {
             );
             if types.0.is_some() && types.1.is_some() {
                 //println!("Type 1: {:?}\nType 2: {:?}", types.0, types.1);
-                let result = compose_snippets(&fname, (types.0.unwrap(), types.1.unwrap()));
+                let result = composer(&fname, (types.0.unwrap(), types.1.unwrap()));
                 match result {
                     Ok(r) => {
                         if r.len() > 0 {
