@@ -2,6 +2,7 @@ pub mod friendly;
 pub mod snippet;
 
 use self::{friendly::FriendlySnippet, snippet::Snippet};
+use crate::errors::TektonError;
 use crate::snippets::friendly::FriendlySnippetBody;
 use crate::utils::get_input;
 use regex::bytes::RegexSetBuilder;
