@@ -8,11 +8,11 @@ use crate::{
         build_friendly_string, friendly::FriendlySnippet,
         gen_friendly_snippets, gen_snippet, snippet::Snippet,
     },
-    utils::read_lines, errors::SnippetError,
+    utils::read_lines, errors::TektonError,
 };
 
 /// The main snippet composition function 
-pub fn compose_snippets(fname: &String, types: (&str, &str)) -> Result<String, SnippetError> {
+pub fn compose_snippets(fname: &String, types: (&str, &str)) -> Result<String, TektonError> {
     match types {
         ("snippet", "json") => {
             let lines: Result<Vec<String>, std::io::Error> = read_lines(fname);
@@ -29,10 +29,10 @@ pub fn compose_snippets(fname: &String, types: (&str, &str)) -> Result<String, S
 }
 
 /// A private helper function to handle `.snippet` -> `.json`
-fn compose_friendly_snippets(lines: Vec<String>) -> Result<String, SnippetError> {
+fn compose_friendly_snippets(lines: Vec<String>) -> Result<String, TektonError> {
     let snips = gen_snippet(lines);
     let friendlies: Vec<FriendlySnippet> = gen_friendly_snippets(snips);
-    let result: Result<String, SnippetError> = build_friendly_string(friendlies);
+    let result: Result<String, TektonError> = build_friendly_string(friendlies);
     match result {
         Ok(result) => Ok(result),
         Err(e) => {
@@ -43,7 +43,7 @@ fn compose_friendly_snippets(lines: Vec<String>) -> Result<String, SnippetError>
 }
 
 /// A private helper function to strip JSON down to Snippet objects
-fn compose_vim_snippets(json_snippets: String) -> Result<String, SnippetError> {
+fn compose_vim_snippets(json_snippets: String) -> Result<String, TektonError> {
     
     // Read the JSON 
     let json: serde_json::Value = serde_json::from_str(&json_snippets).unwrap();
@@ -65,15 +65,16 @@ fn compose_vim_snippets(json_snippets: String) -> Result<String, SnippetError> {
             }
             // Extract and deref the prefix
             let prefix = v["prefix"].to_string();
+            let description = v["description"].to_string();
             // Build out the snippet 
-            let s: Snippet = Snippet::new(prefix, body);
+            let s: Snippet = Snippet::new(prefix, body, description);
             // Push to the end
             snippets.push(s);
         }
     }
 
     if snippets.is_empty() {
-        return Err(SnippetError::Reason("No JSON snippets were parsed".to_string()));
+        return Err(TektonError::Reason("No JSON snippets were parsed".to_string()));
     }
 
     let mut finished: String = String::from("");

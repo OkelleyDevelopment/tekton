@@ -4,7 +4,6 @@ pub mod snippet;
 use self::{friendly::FriendlySnippet, snippet::Snippet};
 use crate::snippets::friendly::FriendlySnippetBody;
 use crate::utils::get_input;
-use crate::errors::SnippetError;
 use regex::bytes::RegexSetBuilder;
 
 /// Escapes backslashes for the snippets to preserve strings
@@ -14,6 +13,8 @@ pub fn standardize_string(line: String) -> String {
     res
 }
 
+
+/// Function to construct each snippet object from the `example.snippet` format
 pub fn gen_snippet(lines: Vec<String>) -> Vec<Snippet> {
     let mut snippets: Vec<Snippet> = Vec::new();
 
@@ -23,14 +24,24 @@ pub fn gen_snippet(lines: Vec<String>) -> Vec<Snippet> {
         .expect("failed");
 
     for line in lines.iter() {
+        // Construct a new snippet
         if set.is_match(line.as_bytes()) {
+
+            // Split on spaces
             let mut s = line.split(' ');
             s.next();
+
+            // Note: Constructing each component for the snippet 
             let name = s.next().unwrap().to_string();
             let desc = s.next().unwrap_or("").to_string();
-            let snip = Snippet::new(name, Vec::new());
-            snippets.push(snip);
-        } else {
+
+            // Building the snippet and adding to the array
+            snippets.push(Snippet::new(name, Vec::new(), desc));
+        } 
+        // Continue to add the body of the snippet to the most recently 
+        // added snippet struct.
+        else {
+
             let index = snippets.len() - 1;
             let handle = snippets.get_mut(index).unwrap();
             handle.body.push(standardize_string(line.to_string()));
@@ -65,9 +76,9 @@ pub fn gen_friendly_snippets(snips: Vec<Snippet>) -> Vec<FriendlySnippet> {
     friendly_handle
 }
 
-pub fn build_friendly_string(friendlies: Vec<FriendlySnippet>) -> Result<String, SnippetError> {
+pub fn build_friendly_string(friendlies: Vec<FriendlySnippet>) -> Result<String, TektonError> {
     if friendlies.is_empty() {
-        return Err(SnippetError::Reason("No snippets provided".to_string()));
+        return Err(TektonError::Reason("No snippets provided".to_string()));
     }
 
     let mut finished: String = String::from("{\n");
@@ -93,4 +104,14 @@ pub fn build_friendly_string(friendlies: Vec<FriendlySnippet>) -> Result<String,
     print!("\x1B[2J\x1B[1;1H");
     finished += "\n}";
     Ok(finished)
+}
+
+
+
+
+#[test]
+fn test_standardize_string() {
+    let input = String::from("\"");
+    let expected = String::from("\\\"");
+    assert_eq!(standardize_string(input), expected);
 }
