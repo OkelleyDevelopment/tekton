@@ -5,12 +5,12 @@ extern crate clap;
 use clap::Parser;
 use tekton::composer::compose_snippets;
 use tekton::utils::write_to_file;
-use tekton::errors::SnippetError;
+use tekton::errors::TektonError;
 
 /// Entry point to the CLI App
-fn main() -> Result<(), SnippetError> {
+fn main() -> Result<(), TektonError> {
     let cli = Cli::parse();
-    let res: Result<(String, String), SnippetError> = parse_config(cli);
+    let res: Result<(String, String), TektonError> = parse_config(cli);
     match res {
         Ok(names) => {
             let (fname, file_to_write) = names;
@@ -24,18 +24,18 @@ fn main() -> Result<(), SnippetError> {
                             write_to_file(file_to_write, r);
                             Ok(())
                         } else {
-                            Err(SnippetError::Reason(String::from("Empty file will not be written")))
+                            Err(TektonError::Reason(String::from("Empty file will not be written")))
                         }
                     }
                     Err(e) => Err(e),
                 }
                 
             } else {
-                Err(SnippetError::Reason(String::from("Unable to extract file extension")))
+                Err(TektonError::Reason(String::from("Unable to extract file extension")))
             }
 
         }
-        Err(e) => Err(SnippetError::Reason(e.to_string())),
+        Err(e) => Err(TektonError::Reason(e.to_string())),
     }
 }
 
@@ -57,19 +57,19 @@ struct Cli {
 }
 
 /// Parses the input and output file name arguments, returning an error if missing
-fn parse_config(cli: Cli) -> Result<(String, String), SnippetError> {
+fn parse_config(cli: Cli) -> Result<(String, String), TektonError> {
     let mut payload = (String::new(), String::new());
 
     if let Some(name) = cli.input.as_deref() {
         payload.0 = name.to_string();
     } else {
-        return Err(SnippetError::Reason("Missing input file name".to_string()));
+        return Err(TektonError::Reason("Missing input file name".to_string()));
     }
 
     if let Some(n) = cli.output.as_deref() {
         payload.1 = n.to_string()
     } else {
-        return Err(SnippetError::Reason("Missing output file name".to_string()));
+        return Err(TektonError::Reason("Missing output file name".to_string()));
     }
     Ok(payload)
 }
