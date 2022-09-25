@@ -1,11 +1,11 @@
-use std::path::Path;
 use std::ffi::OsStr;
+use std::path::Path;
 
 extern crate clap;
 use clap::Parser;
 use tekton::composer::compose_snippets;
-use tekton::utils::write_to_file;
 use tekton::errors::TektonError;
+use tekton::utils::write_to_file;
 
 /// Entry point to the CLI App
 fn main() -> Result<(), TektonError> {
@@ -14,7 +14,10 @@ fn main() -> Result<(), TektonError> {
     match res {
         Ok(names) => {
             let (fname, file_to_write) = names;
-            let types: (Option<&str>, Option<&str>) = (get_extension_from_filename(&fname), get_extension_from_filename(&file_to_write));
+            let types: (Option<&str>, Option<&str>) = (
+                get_extension_from_filename(&fname),
+                get_extension_from_filename(&file_to_write),
+            );
             if types.0.is_some() && types.1.is_some() {
                 //println!("Type 1: {:?}\nType 2: {:?}", types.0, types.1);
                 let result = compose_snippets(&fname, (types.0.unwrap(), types.1.unwrap()));
@@ -24,16 +27,18 @@ fn main() -> Result<(), TektonError> {
                             write_to_file(file_to_write, r);
                             Ok(())
                         } else {
-                            Err(TektonError::Reason(String::from("Empty file will not be written")))
+                            Err(TektonError::Reason(String::from(
+                                "Empty file will not be written",
+                            )))
                         }
                     }
                     Err(e) => Err(e),
                 }
-                
             } else {
-                Err(TektonError::Reason(String::from("Unable to extract file extension")))
+                Err(TektonError::Reason(String::from(
+                    "Unable to extract file extension",
+                )))
             }
-
         }
         Err(e) => Err(TektonError::Reason(e.to_string())),
     }
