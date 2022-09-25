@@ -1,10 +1,10 @@
-name: Rust
+name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "*" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "*" ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -23,7 +23,17 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }} 
-    - name: Build
-      run: cargo build --verbose
+    
+    - name: Toolchain info
+      run: |
+        cargo --version --verbose
+        rustc --version
+        cargo clippy --version
+
     - name: Run tests
-      run: cargo test --verbose
+      run: | 
+        cargo test --verbose
+    
+    - name: Build
+      run: | 
+        cargo build --verbose

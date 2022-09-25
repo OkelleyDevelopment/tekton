@@ -14,7 +14,6 @@ pub fn standardize_string(line: String) -> String {
     res
 }
 
-
 /// Function to construct each snippet object from the `example.snippet` format
 pub fn gen_snippet(lines: Vec<String>) -> Vec<Snippet> {
     let mut snippets: Vec<Snippet> = Vec::new();
@@ -27,22 +26,20 @@ pub fn gen_snippet(lines: Vec<String>) -> Vec<Snippet> {
     for line in lines.iter() {
         // Construct a new snippet
         if set.is_match(line.as_bytes()) {
-
             // Split on spaces
             let mut s = line.split(' ');
             s.next();
 
-            // Note: Constructing each component for the snippet 
+            // Note: Constructing each component for the snippet
             let name = s.next().unwrap().to_string();
             let desc = s.next().unwrap_or("").to_string();
 
             // Building the snippet and adding to the array
             snippets.push(Snippet::new(name, Vec::new(), desc));
-        } 
-        // Continue to add the body of the snippet to the most recently 
+        }
+        // Continue to add the body of the snippet to the most recently
         // added snippet struct.
         else {
-
             let index = snippets.len() - 1;
             let handle = snippets.get_mut(index).unwrap();
             handle.body.push(standardize_string(line.to_string()));
@@ -106,9 +103,6 @@ pub fn build_friendly_string(friendlies: Vec<FriendlySnippet>) -> Result<String,
     finished += "\n}";
     Ok(finished)
 }
-
-
-
 
 #[test]
 fn test_standardize_string() {
