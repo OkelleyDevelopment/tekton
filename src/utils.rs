@@ -3,6 +3,7 @@
 //! Various Utilities that may be used throughout the CLI program
 //!
 
+use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{self, prelude::*, BufReader, Error};
 use std::path::Path;
@@ -29,14 +30,17 @@ pub fn read_lines(fname: &String) -> Result<Vec<String>, Error> {
         .collect())
 }
 /// Function to write to a newly created file.
-pub fn write_to_file(name: String, finished: String) -> Option<()> {
-    println!("Writing Snippets to file: {}", name);
-    println!("{}", finished);
+pub fn write_to_file(name: String, finished: String) {
+
     let mut outfile = File::create(Path::new("./").join(name))
         .unwrap_or_else(|err| panic!("Could not create the file {}", err));
 
     outfile
         .write_all(finished.as_bytes())
         .unwrap_or_else(|err| panic!("Could not write the snippets {}", err));
-    Some(())
+}
+
+/// Helper function to get the file extension being passed in.
+pub fn get_extension_from_filename(filename: &str) -> Option<&str> {
+    Path::new(filename).extension().and_then(OsStr::to_str)
 }

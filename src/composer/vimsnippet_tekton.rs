@@ -22,7 +22,7 @@ pub fn compose_vim_snippets(json_snippets: String) -> Result<String, TektonError
             // Then for the body, iterate and push the lines to the new Vec
             for line in v["body"].as_array().unwrap().iter() {
                 //body.push(line.to_string());
-                body.push(reformat_line(line.to_string()));
+                body.push(line.to_string());
             }
             // Extract and deref the prefix
             let prefix = v["prefix"].to_string();
@@ -41,14 +41,12 @@ pub fn compose_vim_snippets(json_snippets: String) -> Result<String, TektonError
     }
 
     let mut finished: String = String::from("");
-    //let mut count: usize = 0;
-
     for obj in snippets {
-        //count += 1;
         let snip = &obj.display();
+        //println!("\n ---> {}", snip);
         finished = finished + snip;
     }
-    //println!("Total snippets converted: {}", count);
+
     Ok(finished)
 }
 
@@ -84,23 +82,4 @@ pub fn gen_snippet(lines: Vec<String>) -> Vec<Snippet> {
         }
     }
     snippets
-}
-
-/// A helper function that should help us manage quotes in strings
-fn reformat_line(line: String) -> String {
-    // Remove the tabs
-    let mut payload = line.replace("\\t", " ");
-    // Replace any remaining backslashes with a quote
-    payload = payload.replace("(\\", "(\"");
-    payload = payload.replace("\\)", "\")");
-    println!("{}", payload);
-    return payload;
-}
-
-#[test]
-fn test_reformat() {
-    let test: String = String::from(r"print!(\${1}\);");
-    let expected: String = String::from("print!(\"${1}\");");
-
-    assert_eq!(reformat_line(test), expected);
 }

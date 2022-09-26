@@ -3,6 +3,7 @@
 //! used by `honza/vim-snippets`.
 //!
 
+use regex::Regex;
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
@@ -23,12 +24,18 @@ impl Snippet {
 
     /// Converts our vim snippet to a string
     pub fn display(self) -> String {
-        let mut s = "snippet ".to_string() + &self.prefix + &self.description + "\n";
 
+        let re = Regex::new(r##"^"|"$"##).unwrap();
+        //let re2 = Regex::new(r##"""##).unwrap();
+        
+        // This creates the first line of the snippet, 
+        // taking the form: `snippet <prefix> <Optional: description in quotes>`
+        let mut s = "snippet ".to_string() + &self.prefix + &self.description + "\n";
         // Note: this is done in an attempt to remove the extra quotes needed in JSON
         s = str::replace(&s, "\"", "");
         for item in self.body {
-            let edited_item = str::replace(&item, "\"", "");
+            let edited_item = re.replace_all(&item, "").to_string();
+            //let edited_item = re2.replace_all(&e, '"'.to_string()).to_string();
             let line = "\t".to_string() + &edited_item + "\n";
             s += &line;
         }
