@@ -11,7 +11,6 @@ pub fn compose_vim_snippets(json_snippets: String) -> Result<String, TektonError
     // Declare a snippets vec
     let mut snippets: Vec<Snippet> = Vec::new();
 
-    // TODO: cargo clippy -- -D warnings throws an error, says this should be `if let`.
     // Deserialize and form the object
     for obj in json.into_deserializer().as_object() {
         // For each object, get the Key (name of snippet), and value (snippet body)
