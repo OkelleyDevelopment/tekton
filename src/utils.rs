@@ -31,7 +31,6 @@ pub fn read_lines(fname: &String) -> Result<Vec<String>, Error> {
 }
 /// Function to write to a newly created file.
 pub fn write_to_file(name: String, finished: String) {
-
     let mut outfile = File::create(Path::new("./").join(name))
         .unwrap_or_else(|err| panic!("Could not create the file {}", err));
 

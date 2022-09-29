@@ -1,3 +1,5 @@
+use regex::Regex;
+
 use crate::{
     errors::TektonError,
     snippets::{
@@ -26,6 +28,7 @@ pub fn compose_friendly_snippets(lines: Vec<String>) -> Result<String, TektonErr
 
 pub fn gen_friendly_snippets(snips: Vec<Snippet>) -> Vec<FriendlySnippet> {
     let mut friendly_handle: Vec<FriendlySnippet> = Vec::new();
+    let re = Regex::new(r##"\\""##).unwrap();
 
     for snippet in snips {
         let prefix: String = snippet.prefix;
@@ -38,7 +41,8 @@ pub fn gen_friendly_snippets(snips: Vec<Snippet>) -> Vec<FriendlySnippet> {
         body.reverse();
         body.insert(0, first_line.trim_start().to_string());
         // --------------------------------------------------------------
-        let description: String = String::new();
+        let description: String = re.replace_all(&snippet.description, "").to_string();
+
         let name: String = "snippet ".to_owned() + &prefix;
         //println!("Name is now ---> {:?}", prefix);
         let friendly_body = FriendlySnippetBody::new(prefix, body, description);
