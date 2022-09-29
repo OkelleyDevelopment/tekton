@@ -24,18 +24,29 @@ impl Snippet {
 
     /// Converts our vim snippet to a string
     pub fn display(self) -> String {
-
         let re = Regex::new(r##"^"|"$"##).unwrap();
-        //let re2 = Regex::new(r##"""##).unwrap();
-        
-        // This creates the first line of the snippet, 
+        let re2 = Regex::new(r##"\\""##).unwrap();
+        let quote = String::from("\"+");
+        let tab = String::from("\\t");
+        let re3 = Regex::new(&quote).unwrap();
+        let tab_regex = Regex::new(&tab).unwrap();
+
+        // This creates the first line of the snippet,
         // taking the form: `snippet <prefix> <Optional: description in quotes>`
-        let mut s = "snippet ".to_string() + &self.prefix + &self.description + "\n";
+        let mut s = "snippet ".to_string() + &self.prefix;
+        println!("Current vim snippet -----> {}", s);
         // Note: this is done in an attempt to remove the extra quotes needed in JSON
         s = str::replace(&s, "\"", "");
+
+        s = s + " " + &self.description + "\n";
+
+        s = re3.replace_all(&s, '"'.to_string()).to_string();
+
         for item in self.body {
-            let edited_item = re.replace_all(&item, "").to_string();
-            //let edited_item = re2.replace_all(&e, '"'.to_string()).to_string();
+            let mut edited_item = re.replace_all(&item, "").to_string();
+            edited_item = re2.replace_all(&edited_item, '"'.to_string()).to_string();
+            edited_item = tab_regex.replace_all(&edited_item, " ").to_string();
+            println!("snippet replacing the quote ---> {}", edited_item);
             let line = "\t".to_string() + &edited_item + "\n";
             s += &line;
         }
