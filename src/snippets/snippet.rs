@@ -34,7 +34,6 @@ impl Snippet {
         // This creates the first line of the snippet,
         // taking the form: `snippet <prefix> <Optional: description in quotes>`
         let mut s = "snippet ".to_string() + &self.prefix;
-        println!("Current vim snippet -----> {}", s);
         // Note: this is done in an attempt to remove the extra quotes needed in JSON
         s = str::replace(&s, "\"", "");
 
@@ -46,7 +45,6 @@ impl Snippet {
             let mut edited_item = re.replace_all(&item, "").to_string();
             edited_item = re2.replace_all(&edited_item, '"'.to_string()).to_string();
             edited_item = tab_regex.replace_all(&edited_item, " ").to_string();
-            println!("snippet replacing the quote ---> {}", edited_item);
             let line = "\t".to_string() + &edited_item + "\n";
             s += &line;
         }
@@ -78,6 +76,6 @@ fn test_vim_snippet_display() {
 
     assert_eq!(
         string_rep,
-        String::from("snippet test\n\tA line of snippet\nAn epic test description")
+        String::from("snippet test An epic test description\n\tA line of snippet\n")
     );
 }
