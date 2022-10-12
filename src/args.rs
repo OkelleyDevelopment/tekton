@@ -12,6 +12,8 @@ pub struct TektonArgs {
 pub enum TektonEntity {
     /// Convert Snippets
     Convert(ConversionCommand),
+    /// Sorting JSON
+    Sort(SortCommand),
 }
 
 #[derive(Debug, Args)]
@@ -20,4 +22,10 @@ pub struct ConversionCommand {
     pub input_filename: String,
     /// The output filename
     pub output_filename: String,
+}
+
+#[derive(Debug, Args)]
+pub struct SortCommand {
+    /// The input filename
+    pub input_filename: String,
 }

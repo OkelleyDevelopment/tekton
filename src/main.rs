@@ -18,6 +18,15 @@ fn main() -> Result<(), TektonError> {
             output = convert.output_filename.to_string();
             composer(&convert.input_filename, file_extensions)
         }
+        TektonEntity::Sort(sort) => {
+            //output = sort.input_filename.to_string();
+            output = String::from("c_sorted.json");
+            let file_extensions = (
+                get_extension_from_filename(&sort.input_filename).unwrap(),
+                "tekton-sort",
+            );
+            composer(&sort.input_filename, file_extensions)
+        }
     };
 
     match snippets {
