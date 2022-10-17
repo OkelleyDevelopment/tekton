@@ -4,6 +4,7 @@ use tekton::composer::composer::composer;
 use tekton::errors::TektonError;
 use tekton::utils::get_extension_from_filename;
 use tekton::utils::write_to_file;
+
 /// Entry point to the CLI App
 fn main() -> Result<(), TektonError> {
     let args = TektonArgs::parse();
@@ -19,8 +20,7 @@ fn main() -> Result<(), TektonError> {
             composer(&convert.input_filename, file_extensions)
         }
         TektonEntity::Sort(sort) => {
-            //output = sort.input_filename.to_string();
-            output = String::from("c_sorted.json");
+            output = sort.input_filename.to_string(); 
             let file_extensions = (
                 get_extension_from_filename(&sort.input_filename).unwrap(),
                 "tekton-sort",

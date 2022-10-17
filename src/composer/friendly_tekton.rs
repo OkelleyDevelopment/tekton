@@ -10,7 +10,7 @@ use crate::{
     utils::get_input,
 };
 
-use super::vimsnippet_tekton::gen_snippet;
+use super::snipmate_tekton::gen_snippet;
 
 /// A helper function to handle `.snippet` -> `.json`
 pub fn compose_friendly_snippets(lines: Vec<String>) -> Result<String, TektonError> {

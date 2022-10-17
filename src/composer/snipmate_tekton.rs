@@ -4,7 +4,7 @@ use crate::{errors::TektonError, snippets::snippet::Snippet};
 use regex::{bytes::RegexSetBuilder, Regex};
 
 /// A private helper function to strip JSON down to Snippet objects
-pub fn compose_vim_snippets(json_snippets: String) -> Result<String, TektonError> {
+pub fn compose_snipmate_snippets(json_snippets: String) -> Result<String, TektonError> {
     // Read the JSON
     let json: serde_json::Value = serde_json::from_str(&json_snippets).unwrap();
     let re2 = Regex::new(r##"\\""##).unwrap();
@@ -44,14 +44,13 @@ pub fn compose_vim_snippets(json_snippets: String) -> Result<String, TektonError
     let mut finished: String = String::from("");
     for obj in snippets {
         let snip = &obj.display();
-        //println!("\n ---> {}", snip);
         finished = finished + snip;
     }
 
     Ok(finished)
 }
 
-/// Function to construct each snippet object from the `example.snippet` format
+/// Function to construct each snippet object from the Snipmate format
 pub fn gen_snippet(lines: Vec<String>) -> Vec<Snippet> {
     let mut snippets: Vec<Snippet> = Vec::new();
     let tab = String::from("\\t");
