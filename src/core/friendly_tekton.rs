@@ -12,7 +12,7 @@ use crate::{
 
 use super::snipmate_tekton::gen_snippet;
 
-/// A helper function to handle `.snippet` -> `.json`
+/// A helper function to handle Snipmate to JSON
 pub fn compose_friendly_snippets(lines: Vec<String>) -> Result<String, TektonError> {
     let snips = gen_snippet(lines);
     let friendlies: Vec<FriendlySnippet> = gen_friendly_snippets(snips);

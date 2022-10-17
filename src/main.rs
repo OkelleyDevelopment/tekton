@@ -1,9 +1,8 @@
 use clap::Parser;
 use tekton::args::{TektonArgs, TektonEntity};
-use tekton::composer::composer::composer;
+use tekton::core::composer::composer;
 use tekton::errors::TektonError;
-use tekton::utils::get_extension_from_filename;
-use tekton::utils::write_to_file;
+use tekton::utils::{get_extension_from_filename, write_to_file};
 
 /// Entry point to the CLI App
 fn main() -> Result<(), TektonError> {
@@ -20,7 +19,7 @@ fn main() -> Result<(), TektonError> {
             composer(&convert.input_filename, file_extensions)
         }
         TektonEntity::Sort(sort) => {
-            output = sort.input_filename.to_string(); 
+            output = sort.input_filename.to_string();
             let file_extensions = (
                 get_extension_from_filename(&sort.input_filename).unwrap(),
                 "tekton-sort",

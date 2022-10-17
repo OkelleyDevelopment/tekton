@@ -1,6 +1,5 @@
 //! This file contains the definitions for the `Snippet` structure, which
-//! models the snippet format from any `*.snippet` file following the structure
-//! used by `honza/vim-snippets`.
+//! models a Snipmate snippet.
 //!
 
 use regex::Regex;
