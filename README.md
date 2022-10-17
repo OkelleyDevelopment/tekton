@@ -5,32 +5,29 @@
 Author(s): Nicholas O'Kelley
 
 Date: 2022-08-28
+Last Modified: 2022-10-16
 
 NOTE: This is still a tool in alpha and might rapidly change.
 
 ## Motivation
 
-I needed a **blazingly fast** tool to speed up my ability to convert
-`.snippets` files to `.json` for the
-[`friendly-snippet`](https://github.com/rafamadriz/friendly-snippets) project. The goal
-of this project is now to allow various snippet mappings to coexist.
+I needed a **blazingly fast** tool to both convert and sort snippets for 
+the [`friendly-snippet`](https://github.com/rafamadriz/friendly-snippets) project as 
+doing this by hand was very time consuming.
 
 ## Installation and Execution
 
 - `cargo install tekton`
 
-- `tekton <snippet file to convert> <json output file>`
+To convert: 
 
-## Future Goals
+- `tekton convert <input> <output>`
 
-These are current ideas I've got in mind, but there is currently not a
-definitive road map for which would finished first.
+The current mappings support bidirectional conversion between Snipmate (`.snippet`) and JSON
 
-- Provide options for snippets
-- ~~a better cli interface~~
-- Allow users to switch JSON back to the `vim-snippet` format
-- Edit descriptions?
+To sort: 
+- `tekton sort <INPUT_FILENAME>`
 
 ## Acknowledgements
 
-- My impatience for doing this by hand
+- My impatience for doing this by hand and desire to automate everything
