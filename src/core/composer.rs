@@ -11,7 +11,9 @@ use std::fs;
 use crate::{errors::TektonError, utils::read_lines};
 
 use super::friendly_tekton::sort_friendly_snippets;
-use super::{friendly_tekton::compose_friendly_snippets, snipmate_tekton::compose_snipmate_snippets};
+use super::{
+    friendly_tekton::compose_friendly_snippets, snipmate_tekton::compose_snipmate_snippets,
+};
 
 /// The main snippet composition function
 pub fn composer(fname: &String, types: (&str, &str)) -> Result<String, TektonError> {

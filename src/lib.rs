@@ -1,5 +1,5 @@
 pub mod args;
-pub mod composer;
+pub mod core;
 pub mod errors;
 pub mod snippets;
 pub mod utils;
