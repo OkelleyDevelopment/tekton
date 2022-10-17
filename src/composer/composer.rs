@@ -11,7 +11,7 @@ use std::fs;
 use crate::{errors::TektonError, utils::read_lines};
 
 use super::friendly_tekton::sort_friendly_snippets;
-use super::{friendly_tekton::compose_friendly_snippets, vimsnippet_tekton::compose_vim_snippets};
+use super::{friendly_tekton::compose_friendly_snippets, snipmate_tekton::compose_snipmate_snippets};
 
 /// The main snippet composition function
 pub fn composer(fname: &String, types: (&str, &str)) -> Result<String, TektonError> {
@@ -22,7 +22,7 @@ pub fn composer(fname: &String, types: (&str, &str)) -> Result<String, TektonErr
         }
         ("json", "snippet") => {
             let file = fs::read_to_string(fname).expect("Unable to read file");
-            compose_vim_snippets(file)
+            compose_snipmate_snippets(file)
         }
         ("json", "tekton-sort") => {
             let file = fs::read_to_string(fname).expect("Unable to read file");
