@@ -5,7 +5,14 @@ use regex::{bytes::RegexSetBuilder, Regex};
 
 /// A function to convert JSON snippets to Snipmate snippets
 pub fn compose_snipmate_snippets(json_snippets: String) -> Result<String, TektonError> {
-    let json: serde_json::Value = serde_json::from_str(&json_snippets).unwrap();
+    let json: serde_json::Value = match serde_json::from_str(&json_snippets) {
+        Ok(v) => v,
+        Err(_) => {
+            return Err(TektonError::Reason(
+                "Error: No snippets were found".to_string(),
+            ));
+        }
+    };
     let snippets = create_snipmate_structs_from_json(json)?;
     let snipmate_string = build_snipmate_string(snippets)?;
     Ok(snipmate_string)
