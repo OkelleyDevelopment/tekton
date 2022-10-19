@@ -1,19 +1,16 @@
-//pub mod tekton_error;
+//! Various Error enums for the tekton program
 use core::fmt;
 
 #[derive(Debug, Clone)]
 pub enum TektonError {
+    /// An error with a custom message as a String
     Reason(String),
-    VimSnippetError(String),
-    FriendlySnippetError(String),
 }
 
 impl fmt::Display for TektonError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let string = match self {
             TektonError::Reason(r) => r.clone(),
-            TektonError::VimSnippetError(r) => r.clone(),
-            TektonError::FriendlySnippetError(r) => r.clone(),
         };
         write!(f, "{}", string)
     }

@@ -1,4 +1,4 @@
-//! This is the driving exo-skeleton of the Tekton snippet tool
+//! This is the central driving function of tekton
 //!
 //! It filters the snippet file type pairs and then calls the appropriate composition
 //! function. These functions are split into their own files to keep this file
@@ -10,7 +10,7 @@ use std::fs;
 
 use crate::{errors::TektonError, utils::read_lines};
 
-use super::friendly_tekton::sort_friendly_snippets;
+use super::friendly_tekton::{build_friendly_string, sort_friendly_snippets};
 use super::{
     friendly_tekton::compose_friendly_snippets, snipmate_tekton::compose_snipmate_snippets,
 };
@@ -28,7 +28,11 @@ pub fn composer(fname: &String, types: (&str, &str)) -> Result<String, TektonErr
         }
         ("json", "tekton-sort") => {
             let file = fs::read_to_string(fname).expect("Unable to read file");
-            sort_friendly_snippets(file)
+            let snippets = sort_friendly_snippets(file);
+            match snippets {
+                Ok(s) => build_friendly_string(s),
+                Err(e) => Err(e),
+            }
         }
         _ => {
             panic!("No supported mapping!");

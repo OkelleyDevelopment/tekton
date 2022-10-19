@@ -1,7 +1,4 @@
-//! Simple and easy to use Utilities
-//!
-//! Various Utilities that may be used throughout the CLI program
-//!
+//! Simple and easy to use utilities that may be used throughout the CLI program
 
 use std::ffi::OsStr;
 use std::fs::File;
@@ -42,4 +39,19 @@ pub fn write_to_file(name: String, finished: String) {
 /// Helper function to get the file extension being passed in.
 pub fn get_extension_from_filename(filename: &str) -> Option<&str> {
     Path::new(filename).extension().and_then(OsStr::to_str)
+}
+
+#[test]
+fn test_extension() {
+    let filename = String::from("example.json");
+    let result = get_extension_from_filename(&filename);
+    assert_ne!(result, None);
+    assert_eq!(result.unwrap(), "json");
+}
+
+#[test]
+fn test_empty_string_on_extension() {
+    let filename = String::from("");
+    let result = get_extension_from_filename(&filename);
+    assert_eq!(result, None);
 }

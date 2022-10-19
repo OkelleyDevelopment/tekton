@@ -1,27 +1,25 @@
-//! This file contains the definitions for the `Snippet` structure, which
-//! models a Snipmate snippet.
-//!
+//! Structures to model the Snipmate snippet format
 
 use regex::Regex;
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
-pub struct Snippet {
+pub struct Snipmate {
     pub prefix: String,
     pub body: Vec<String>,
     pub description: String,
 }
 
-impl Snippet {
-    pub fn new(prefix: String, body: Vec<String>, description: String) -> Snippet {
-        Snippet {
+impl Snipmate {
+    pub fn new(prefix: String, body: Vec<String>, description: String) -> Snipmate {
+        Snipmate {
             prefix,
             body,
             description,
         }
     }
 
-    /// Converts our vim snippet to a string
+    /// Converts the snippet to a string
     pub fn display(self) -> String {
         let re = Regex::new(r##"^"|"$"##).unwrap();
         let re2 = Regex::new(r##"\\""##).unwrap();
@@ -53,7 +51,7 @@ impl Snippet {
 
 #[test]
 fn test_vim_snippet_creation() {
-    let snip = Snippet::new(
+    let snip = Snipmate::new(
         String::from("test"),
         Vec::new(),
         String::from("An epic test description"),
@@ -65,7 +63,7 @@ fn test_vim_snippet_creation() {
 
 #[test]
 fn test_vim_snippet_display() {
-    let mut snip = Snippet::new(
+    let mut snip = Snipmate::new(
         String::from("test"),
         Vec::new(),
         String::from("An epic test description"),
