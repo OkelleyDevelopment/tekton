@@ -1,3 +1,4 @@
+//! The commands for the tekton cli program
 extern crate clap;
 use clap::{Args, Parser, Subcommand};
 
