@@ -29,7 +29,10 @@ fn main() -> Result<(), TektonError> {
     };
 
     match snippets {
-        Ok(snippets) => Ok(write_to_file(output, snippets)),
+        Ok(snippets) => {
+            write_to_file(output, snippets);
+            Ok(())
+        }
         Err(e) => Err(e),
     }
 }

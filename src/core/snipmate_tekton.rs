@@ -1,58 +1,62 @@
 use serde::de::IntoDeserializer;
 
-use crate::{errors::TektonError, snippets::snippet::Snippet};
+use crate::{errors::TektonError, snippets::snipmate::Snipmate};
 use regex::{bytes::RegexSetBuilder, Regex};
 
-/// A private helper function to strip JSON down to Snippet objects
+/// A function to convert JSON snippets to Snipmate snippets
 pub fn compose_snipmate_snippets(json_snippets: String) -> Result<String, TektonError> {
-    // Read the JSON
     let json: serde_json::Value = serde_json::from_str(&json_snippets).unwrap();
-    let re2 = Regex::new(r##"\\""##).unwrap();
-    // Declare a snippets vec
-    let mut snippets: Vec<Snippet> = Vec::new();
-
-    // Deserialize and form the object
-    for obj in json.into_deserializer().as_object() {
-        // For each object, get the Key (name of snippet), and value (snippet body)
-        for (_, v) in obj {
-            // Declare a Vec for the body of the snippet
-            let mut body: Vec<String> = Vec::new();
-
-            // Then for the body, iterate and push the lines to the new Vec
-            for line in v["body"].as_array().unwrap().iter() {
-                //body.push(line.to_string());
-                body.push(line.to_string());
-            }
-            // Extract and deref the prefix
-            let prefix = v["prefix"].to_string();
-            let mut description = v["description"].to_string();
-            //println!("{}", description);
-            description = re2.replace_all(&description, '"'.to_string()).to_string();
-            // Build out the snippet
-            let s: Snippet = Snippet::new(prefix, body, description);
-            // Push to the end
-            snippets.push(s);
-        }
-    }
-
-    if snippets.is_empty() {
-        return Err(TektonError::Reason(
-            "No JSON snippets were parsed".to_string(),
-        ));
-    }
-
-    let mut finished: String = String::from("");
-    for obj in snippets {
-        let snip = &obj.display();
-        finished = finished + snip;
-    }
-
-    Ok(finished)
+    let snippets = create_snipmate_structs_from_json(json)?;
+    let snipmate_string = build_snipmate_string(snippets)?;
+    Ok(snipmate_string)
 }
 
-/// Function to construct each snippet object from the Snipmate format
-pub fn gen_snippet(lines: Vec<String>) -> Vec<Snippet> {
-    let mut snippets: Vec<Snippet> = Vec::new();
+/// A function to create a string representation of a Vec of Snipmate Snippets
+pub fn build_snipmate_string(snippets: Vec<Snipmate>) -> Result<String, TektonError> {
+    let mut snipmate_string = String::from("");
+    for snip in snippets {
+        snipmate_string = snipmate_string + &snip.display();
+    }
+    Ok(snipmate_string)
+}
+
+/// Function to generate a Vec of Snippet structs from parsed JSON, will return TektonError if Vec is empty
+pub fn create_snipmate_structs_from_json(
+    json: serde_json::Value,
+) -> Result<Vec<Snipmate>, TektonError> {
+    let re2 = Regex::new(r##"\\""##).unwrap();
+    let mut snippets: Vec<Snipmate> = Vec::new();
+
+    if let Some(obj) = json.into_deserializer().as_object() {
+        // Note: This tuple is (name, value) but we omit the name for Snipmate snippets
+        for (_, v) in obj {
+            let snip: Snipmate = Snipmate::new(
+                v["prefix"].to_string(),
+                v["body"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|line| line.to_string())
+                    .collect(),
+                re2.replace_all(&v["description"].to_string(), '"'.to_string())
+                    .to_string(),
+            );
+
+            snippets.push(snip);
+        }
+    }
+    if snippets.is_empty() {
+        Err(TektonError::Reason(
+            "No JSON snippets were parsed".to_string(),
+        ))
+    } else {
+        Ok(snippets)
+    }
+}
+
+/// Function to construct the Snipmate structs from a Vec<String> representing the snippet file that was read in.
+pub fn build_snippets_from_file(lines: Vec<String>) -> Vec<Snipmate> {
+    let mut snippets: Vec<Snipmate> = Vec::new();
     let tab = String::from("\\t");
     let tab_regex = Regex::new(&tab).unwrap();
 
@@ -64,14 +68,14 @@ pub fn gen_snippet(lines: Vec<String>) -> Vec<Snippet> {
     for line in lines.iter() {
         // Construct a new snippet
         if set.is_match(line.as_bytes()) {
-            let mut s = line.split_whitespace().into_iter();
+            let mut s = line.split_whitespace();
             s.next();
             let name = s.next().unwrap_or("").to_string();
 
-            let mut desc = s.map(|s| &*s).collect::<Vec<&str>>().join(" ");
+            let mut desc = s.collect::<Vec<&str>>().join(" ");
             desc = re.replace_all(&desc, "").to_string();
             // Building the snippet and adding to the array
-            snippets.push(Snippet::new(name, Vec::new(), desc));
+            snippets.push(Snipmate::new(name, Vec::new(), desc));
         }
         // Continue to add the body of the snippet to the most recently
         // added snippet struct.
