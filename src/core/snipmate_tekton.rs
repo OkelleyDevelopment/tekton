@@ -1,7 +1,6 @@
-use serde::de::IntoDeserializer;
-
 use crate::{errors::TektonError, snippets::snipmate::Snipmate};
 use regex::{bytes::RegexSetBuilder, Regex};
+use serde::de::IntoDeserializer;
 
 /// A function to convert JSON snippets to Snipmate snippets
 pub fn compose_snipmate_snippets(json_snippets: String) -> Result<String, TektonError> {

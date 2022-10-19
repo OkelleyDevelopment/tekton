@@ -1,6 +1,4 @@
-use regex::Regex;
-use serde::de::IntoDeserializer;
-
+use super::snipmate_tekton::build_snippets_from_file;
 use crate::{
     errors::TektonError,
     snippets::{
@@ -9,8 +7,8 @@ use crate::{
     },
     utils::get_input,
 };
-
-use super::snipmate_tekton::build_snippets_from_file;
+use regex::Regex;
+use serde::de::IntoDeserializer;
 
 // Constant for the suffix to the JSON snippet string
 const NEWLINE: &str = ",\n  ";
