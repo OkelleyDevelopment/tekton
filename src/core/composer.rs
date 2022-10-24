@@ -44,8 +44,8 @@ pub fn composer(fname: &String, types: (&str, &str)) -> Result<String, TektonErr
             "Sorting snipmate snippets isn't supported at this time.".to_string(),
         )),
         _ => Err(TektonError::Reason(
-            "Unsupported mapping attempted in the composer function".to_string()
-        ))
+            "Unsupported mapping attempted in the composer function".to_string(),
+        )),
     }
 }
 
