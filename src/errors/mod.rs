@@ -1,7 +1,7 @@
 //! Various Error enums for the tekton program
 use core::fmt;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum TektonError {
     /// An error with a custom message as a String
     Reason(String),
