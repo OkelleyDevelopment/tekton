@@ -10,10 +10,16 @@ use super::{
     friendly_tekton::compose_friendly_snippets, snipmate_tekton::compose_snipmate_snippets,
 };
 use crate::{errors::TektonError, utils::read_lines};
-use core::panic;
 use std::fs;
 
 /// The main snippet composition function
+///
+/// Arguments:
+/// - `fname` is the filename of the snippets to read from
+/// - `types` is the tuple which signifies what mapping to use in the match statement
+///
+/// Returns:
+/// - Result of String (to write to file) or a TektonError with the reason for the error
 pub fn composer(fname: &String, types: (&str, &str)) -> Result<String, TektonError> {
     match types {
         ("snippet", "json") => match read_lines(fname) {
@@ -34,9 +40,12 @@ pub fn composer(fname: &String, types: (&str, &str)) -> Result<String, TektonErr
                 Err(e) => Err(e),
             }
         }
-        _ => {
-            panic!("No supported mapping!");
-        }
+        ("snippet", "tekton-sort") => Err(TektonError::Reason(
+            "Sorting snipmate snippets isn't supported at this time.".to_string(),
+        )),
+        _ => Err(TektonError::Reason(
+            "Unsupported mapping attempted in the composer function".to_string()
+        ))
     }
 }
 
