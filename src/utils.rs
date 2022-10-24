@@ -43,18 +43,18 @@ pub fn get_extension_from_filename(filename: &str) -> Option<&str> {
 }
 
 #[test]
+fn test_empty_string_on_extension() {
+    let filename = String::from("");
+    let result = get_extension_from_filename(&filename);
+    assert_eq!(result, None);
+}
+
+#[test]
 fn test_extension() {
     let filename = String::from("example.json");
     let result = get_extension_from_filename(&filename);
     assert_ne!(result, None);
     assert_eq!(result.unwrap(), "json");
-}
-
-#[test]
-fn test_empty_string_on_extension() {
-    let filename = String::from("");
-    let result = get_extension_from_filename(&filename);
-    assert_eq!(result, None);
 }
 
 #[test]
