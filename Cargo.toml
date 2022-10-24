@@ -4,7 +4,7 @@ version = "0.2.0"
 edition = "2021"
 authors = ["Nicholas O'Kelley"]
 repository = "https://github.com/OkelleyDevelopment/tekton"
-description = "A blazingly fast code snippet builder"
+description = "A blazingly fast code snippet sorter"
 readme = "README.md"
 license = "GPL-3.0"
 categories = ["command-line-utilities"]
@@ -23,4 +23,4 @@ path="./src/main.rs"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.48"
 regex = "1"
-clap = { version = "3.2.20", features = ["derive"] }
+clap = { version = "4.0", features = ["derive"] }
