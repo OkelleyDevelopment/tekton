@@ -65,7 +65,6 @@ fn test_long_filename_extension() {
     assert_eq!(result.unwrap(), "json");
 }
 
-
 #[test]
 fn test_extension_on_snippet() {
     let filename = String::from("example.snippet");
@@ -82,7 +81,6 @@ fn test_filename_with_parens_extension() {
     assert_eq!(result.unwrap(), "json");
 }
 
-
 #[test]
 fn test_filename_with_braces_extension() {
     let filename = String::from("exam{file}ple.json");
@@ -90,7 +88,6 @@ fn test_filename_with_braces_extension() {
     assert_ne!(result, None);
     assert_eq!(result.unwrap(), "json");
 }
-
 
 #[test]
 fn test_filename_with_brackets_extension() {
