@@ -81,34 +81,39 @@ pub fn create_friendly_snippet_structs(snips: Vec<Snipmate>) -> Vec<FriendlySnip
 
 /// Helper function to create the JSON structs
 pub fn create_json_snippet_structs(file: String) -> Result<Vec<FriendlySnippet>, TektonError> {
-    let json: serde_json::Value = serde_json::from_str(&file).unwrap();
-    let mut snippets: Vec<FriendlySnippet> = Vec::new();
+    let json: Result<serde_json::Value, serde_json::Error> = serde_json::from_str(&file);
+    match json {
+        Ok(json) => {
+            let mut snippets: Vec<FriendlySnippet> = Vec::new();
 
-    if let Some(obj) = json.into_deserializer().as_object() {
-        for (name, v) in obj {
-            let mut body: Vec<String> = Vec::new();
+            if let Some(obj) = json.into_deserializer().as_object() {
+                for (name, v) in obj {
+                    let mut body: Vec<String> = Vec::new();
 
-            for line in v["body"].as_array().unwrap().iter() {
-                body.push(line.to_string());
+                    for line in v["body"].as_array().unwrap().iter() {
+                        body.push(line.to_string());
+                    }
+
+                    let snippet_body = FriendlySnippetBody::new(
+                        v["prefix"].to_string(),
+                        body,
+                        v["description"].to_string(),
+                    );
+
+                    snippets.push(FriendlySnippet {
+                        name: name.to_string(),
+                        snip_body: snippet_body,
+                    });
+                }
             }
 
-            let snippet_body = FriendlySnippetBody::new(
-                v["prefix"].to_string(),
-                body,
-                v["description"].to_string(),
-            );
-
-            snippets.push(FriendlySnippet {
-                name: name.to_string(),
-                snip_body: snippet_body,
-            });
+            if snippets.is_empty() {
+                Err(TektonError::Reason("No snippets created".to_string()))
+            } else {
+                Ok(snippets)
+            }
         }
-    }
-
-    if snippets.is_empty() {
-        Err(TektonError::Reason("No snippets created".to_string()))
-    } else {
-        Ok(snippets)
+        Err(e) => Err(TektonError::Reason(e.to_string())),
     }
 }
 
@@ -117,7 +122,7 @@ pub fn sort_friendly_snippets(json_snippets: String) -> Result<Vec<FriendlySnipp
     let snippets = create_json_snippet_structs(json_snippets);
     match snippets {
         Ok(mut s) => {
-            // Inplace sort of the snippets by their name
+            // Sort of the snippets by their name
             s.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
             Ok(s)
         }
