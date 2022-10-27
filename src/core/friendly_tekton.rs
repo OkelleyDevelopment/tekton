@@ -12,17 +12,22 @@ use serde::de::IntoDeserializer;
 
 // Constant for the suffix to the JSON snippet string
 const NEWLINE: &str = ",\n  ";
+pub const IS_INTERACTIVE: bool = true;
+pub const IS_NOT_INTERACTIVE: bool = false;
 
 /// A helper function to handle Snipmate to JSON
 pub fn compose_friendly_snippets(lines: Vec<String>) -> Result<String, TektonError> {
     let snips = build_snippets_from_file(lines);
     let friendlies = create_friendly_snippet_structs(snips);
-    let result = build_friendly_string(friendlies)?;
+    let result = build_friendly_string(friendlies, IS_INTERACTIVE)?;
     Ok(result)
 }
 
 /// A function that takes a Vec of FriendlySnippet structs and returns the string representation or a TektonError
-pub fn build_friendly_string(friendlies: Vec<FriendlySnippet>) -> Result<String, TektonError> {
+pub fn build_friendly_string(
+    friendlies: Vec<FriendlySnippet>,
+    interactive: bool,
+) -> Result<String, TektonError> {
     if friendlies.is_empty() {
         return Err(TektonError::Reason("No snippets provided".to_string()));
     }
@@ -32,23 +37,34 @@ pub fn build_friendly_string(friendlies: Vec<FriendlySnippet>) -> Result<String,
     let target = friendlies.len();
 
     for mut obj in friendlies {
-        print!("\x1B[2J\x1B[1;1H"); // Clear terminal
+        // Remove extra quotes
         obj.snip_body.description = obj.snip_body.description.replace('\"', "");
-        let snip: String = serde_json::to_string_pretty(&obj.snip_body)
-            .unwrap()
-            .to_string();
-        println!(
-            "Snippet {} of {}:\n{}\n\nEnter name below:",
-            count, target, snip
-        );
-        json_string = json_string + "\"" + &get_input() + "\": " + &snip;
+        // build our snippet String
+        let body: String = serde_json::to_string_pretty(&obj.snip_body).unwrap();
+
+        // Meaning the program clears the terminal
+        // and will prompt for a name
+        if interactive {
+            print!("\x1B[2J\x1B[1;1H"); // Clear terminal
+            println!(
+                "Snippet {} of {}:\n{}\n\nEnter name below:",
+                count, target, body
+            );
+            json_string = json_string + "\"" + &get_input() + "\": " + &body;
+        } else {
+            // Otherwise,
+            // we already have the name so just append
+            json_string = json_string + "\"" + &obj.name + "\": " + &body;
+        }
+
+        // More than one snippet and we append a newline
         if count < target {
             json_string += NEWLINE
         }
+        // Increment the count of snippets
         count += 1;
     }
 
-    print!("\x1B[2J\x1B[1;1H");
     json_string += "\n}";
     Ok(json_string)
 }
@@ -89,15 +105,15 @@ pub fn create_json_snippet_structs(file: String) -> Result<Vec<FriendlySnippet>,
             if let Some(obj) = json.into_deserializer().as_object() {
                 for (name, v) in obj {
                     let mut body: Vec<String> = Vec::new();
-
                     for line in v["body"].as_array().unwrap().iter() {
-                        body.push(line.to_string());
+                        let edited_line = line.to_string().replace("\\t", "    ");
+                        body.push(edited_line);
                     }
 
                     let snippet_body = FriendlySnippetBody::new(
-                        v["prefix"].to_string(),
+                        v["prefix"].to_string().replace('\"', ""),
                         body,
-                        v["description"].to_string(),
+                        v["description"].to_string().replace('\"', ""),
                     );
 
                     snippets.push(FriendlySnippet {
@@ -118,13 +134,29 @@ pub fn create_json_snippet_structs(file: String) -> Result<Vec<FriendlySnippet>,
 }
 
 /// Function to build JSON snippets, sort, then return the sorted Vec<FriendlySnippet>
-pub fn sort_friendly_snippets(json_snippets: String) -> Result<Vec<FriendlySnippet>, TektonError> {
+pub fn sort_friendly_snippets(json_snippets: String) -> Result<String, TektonError> {
     let snippets = create_json_snippet_structs(json_snippets);
     match snippets {
         Ok(mut s) => {
             // Sort of the snippets by their name
             s.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
-            Ok(s)
+            let mut sorted: String = String::from("{\n  ");
+
+            let mut count = 0;
+            let target = s.len();
+            for snip in s {
+                count += 1;
+                let name = snip.name;
+                let snippet_body_string = serde_json::to_string_pretty(&snip.snip_body).unwrap();
+            
+                sorted += &('\"'.to_string() + &name +  &"\":".to_string());
+                sorted += &snippet_body_string;
+                if count <  target {
+                    sorted += ", \n"
+                }
+            }
+            sorted += "\n}";
+            Ok(sorted)
         }
         Err(e) => Err(TektonError::Reason(e.to_string())),
     }
