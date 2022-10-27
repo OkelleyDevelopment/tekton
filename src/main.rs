@@ -19,7 +19,7 @@ fn main() -> Result<(), TektonError> {
             composer(&convert.input_filename, file_extensions)
         }
         TektonEntity::Sort(sort) => {
-            output = sort.input_filename.to_string();
+            output = "c_sorted.json".to_string();
             let file_extensions = (
                 get_extension_from_filename(&sort.input_filename).unwrap(),
                 "tekton-sort",
