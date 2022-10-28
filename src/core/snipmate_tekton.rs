@@ -1,18 +1,12 @@
-use crate::{errors::TektonError, snippets::snipmate::Snipmate};
+use crate::{
+    errors::TektonError,
+    snippets::{friendly::FriendlySnippets, snipmate::Snipmate},
+};
 use regex::{bytes::RegexSetBuilder, Regex};
-use serde::de::IntoDeserializer;
 
 /// A function to convert JSON snippets to Snipmate snippets
-pub fn compose_snipmate_snippets(json_snippets: String) -> Result<String, TektonError> {
-    let json: serde_json::Value = match serde_json::from_str(&json_snippets) {
-        Ok(v) => v,
-        Err(_) => {
-            return Err(TektonError::Reason(
-                "Error: No snippets were found".to_string(),
-            ));
-        }
-    };
-    let snippets = create_snipmate_structs_from_json(json)?;
+pub fn compose_snipmate_snippets(friendlies: FriendlySnippets) -> Result<String, TektonError> {
+    let snippets = create_snipmate_structs_from_json(friendlies)?;
     let snipmate_string = build_snipmate_string(snippets)?;
     Ok(snipmate_string)
 }
@@ -27,36 +21,35 @@ pub fn build_snipmate_string(snippets: Vec<Snipmate>) -> Result<String, TektonEr
 }
 
 /// Function to generate a Vec of Snippet structs from parsed JSON, will return TektonError if Vec is empty
+///
+/// This function does not ensure any sorting of snippets from the parsed HashMap.
 pub fn create_snipmate_structs_from_json(
-    json: serde_json::Value,
+    friendlies: FriendlySnippets,
 ) -> Result<Vec<Snipmate>, TektonError> {
-    let re2 = Regex::new(r##"\\""##).unwrap();
-    let mut snippets: Vec<Snipmate> = Vec::new();
-
-    if let Some(obj) = json.into_deserializer().as_object() {
-        // Note: This tuple is (name, value) but we omit the name for Snipmate snippets
-        for (_, v) in obj {
-            let snip: Snipmate = Snipmate::new(
-                v["prefix"].to_string(),
-                v["body"]
-                    .as_array()
-                    .unwrap()
-                    .iter()
-                    .map(|line| line.to_string())
-                    .collect(),
-                re2.replace_all(&v["description"].to_string(), '"'.to_string())
-                    .to_string(),
-            );
-
-            snippets.push(snip);
-        }
+    let table = friendlies.snippets;
+    if table.is_empty() {
+        return Err(TektonError::Reason("No snippets to convert".to_string()));
     }
-    if snippets.is_empty() {
-        Err(TektonError::Reason(
-            "No JSON snippets were parsed".to_string(),
-        ))
-    } else {
-        Ok(snippets)
+
+    let target = table.len();
+    let mut count: usize = 0;
+    let mut snipmate_snippets: Vec<Snipmate> = Vec::new();
+    for (_k, v) in table {
+        let snip: Snipmate = Snipmate {
+            prefix: v.prefix,
+            body: v.body,
+            description: v.description,
+        };
+        count += 1;
+        snipmate_snippets.push(snip)
+    }
+
+    println!("Count: {} || Target: {}", count, target);
+    match count == target {
+        true => Ok(snipmate_snippets),
+        false => Err(TektonError::Reason(
+            "Missing snippets in count, conversion aborted.".to_string(),
+        )),
     }
 }
 
@@ -80,7 +73,7 @@ pub fn build_snippets_from_file(lines: Vec<String>) -> Vec<Snipmate> {
 
             let mut desc = s.collect::<Vec<&str>>().join(" ");
             desc = re.replace_all(&desc, "").to_string();
-            desc = desc.replace("\"", "");
+            desc = desc.replace('\"', "");
             // Building the snippet and adding to the array
             snippets.push(Snipmate::new(name, Vec::new(), desc));
         }
