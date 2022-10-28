@@ -80,6 +80,7 @@ pub fn build_snippets_from_file(lines: Vec<String>) -> Vec<Snipmate> {
 
             let mut desc = s.collect::<Vec<&str>>().join(" ");
             desc = re.replace_all(&desc, "").to_string();
+            desc = desc.replace("\"", "");
             // Building the snippet and adding to the array
             snippets.push(Snipmate::new(name, Vec::new(), desc));
         }
