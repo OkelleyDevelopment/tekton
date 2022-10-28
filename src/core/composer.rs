@@ -5,7 +5,7 @@
 //! simple.
 //!
 
-use super::friendly_tekton::{build_friendly_string, sort_friendly_snippets};
+use super::friendly_tekton::{read_in_json_snippets, sort_friendly_snippets};
 use super::{
     friendly_tekton::compose_friendly_snippets, snipmate_tekton::compose_snipmate_snippets,
 };
@@ -27,16 +27,22 @@ pub fn composer(fname: &String, types: (&str, &str)) -> Result<String, TektonErr
             Err(e) => Err(TektonError::Reason(e.to_string())),
         },
         ("json", "snippet") => match fs::read_to_string(fname) {
-            Ok(lines) => compose_snipmate_snippets(lines),
+            Ok(lines) => {
+                let friendlies = read_in_json_snippets(lines)?;
+                compose_snipmate_snippets(friendlies)
+            }
             Err(e) => Err(TektonError::Reason(e.to_string())),
         },
         ("json", "tekton-sort") => {
             let snippets = match fs::read_to_string(fname) {
-                Ok(file) => sort_friendly_snippets(file),
+                Ok(file) => {
+                    let friendlies = read_in_json_snippets(file)?;
+                    sort_friendly_snippets(friendlies)
+                }
                 Err(e) => Err(TektonError::Reason(e.to_string())),
             };
             match snippets {
-                Ok(s) => build_friendly_string(s),
+                Ok(s) => Ok(s),
                 Err(e) => Err(e),
             }
         }

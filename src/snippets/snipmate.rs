@@ -3,6 +3,7 @@
 use regex::Regex;
 use serde::Serialize;
 
+/// A structure representing the vim-snippet/ Snipmate format
 #[derive(Debug, Serialize)]
 pub struct Snipmate {
     pub prefix: String,
@@ -11,6 +12,7 @@ pub struct Snipmate {
 }
 
 impl Snipmate {
+    /// A function to create new Snipmate snippet structs
     pub fn new(prefix: String, body: Vec<String>, description: String) -> Snipmate {
         Snipmate {
             prefix,

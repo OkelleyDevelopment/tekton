@@ -1,20 +1,17 @@
 //! Structures to model the JSON snippet format
 
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
+/// The Struct representing the JSON file of snippets
 #[derive(Debug, Serialize, Deserialize)]
-pub struct FriendlySnippet {
-    pub name: String,
-    pub snip_body: FriendlySnippetBody,
+pub struct FriendlySnippets {
+    #[serde(flatten)]
+    pub snippets: HashMap<String, FriendlySnippetBody>,
 }
 
-impl FriendlySnippet {
-    pub fn new(name: String, snip_body: FriendlySnippetBody) -> FriendlySnippet {
-        FriendlySnippet { name, snip_body }
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
+/// A struct representing the body of a snippet from the `FriendlySnippets` hashmap
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct FriendlySnippetBody {
     pub prefix: String,
     pub body: Vec<String>,
@@ -40,11 +37,16 @@ fn test_snippet_body_creation() {
 }
 
 #[test]
-fn test_json_snippet_creation() {
+fn test_friendly_snippets() {
+    let mut hp: FriendlySnippets = FriendlySnippets {
+        snippets: HashMap::new(),
+    };
     let body = FriendlySnippetBody::new("snip".to_string(), Vec::new(), "Description".to_string());
-    let snippet = FriendlySnippet::new("test".to_string(), body);
-    assert_eq!(snippet.name, "test".to_string());
-    assert_eq!(snippet.snip_body.prefix, "snip".to_string());
-    assert_eq!(snippet.snip_body.body.len(), 0);
-    assert_eq!(snippet.snip_body.description, "Description".to_string());
+    let expected_body =
+        FriendlySnippetBody::new("snip".to_string(), Vec::new(), "Description".to_string());
+    hp.snippets.insert("test".to_string(), body);
+    assert_eq!(
+        hp.snippets.get(&"test".to_string()).unwrap(),
+        &expected_body
+    );
 }
