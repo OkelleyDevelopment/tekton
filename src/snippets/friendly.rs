@@ -3,13 +3,14 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+/// The Struct representing the JSON file of snippets
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FriendlySnippets {
-    /// Hashmap with key: Snippet name, value: FriendlySnippetBody
     #[serde(flatten)]
     pub snippets: HashMap<String, FriendlySnippetBody>,
 }
 
+/// A struct representing the body of a snippet from the `FriendlySnippets` hashmap
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct FriendlySnippetBody {
     pub prefix: String,
