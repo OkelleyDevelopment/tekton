@@ -27,7 +27,10 @@ pub fn composer(fname: &String, types: (&str, &str)) -> Result<String, TektonErr
             Err(e) => Err(TektonError::Reason(e.to_string())),
         },
         ("json", "snippet") => match fs::read_to_string(fname) {
-            Ok(lines) => compose_snipmate_snippets(lines),
+            Ok(lines) => {
+                let friendlies = read_in_json_snippets(lines)?;
+                compose_snipmate_snippets(friendlies)
+            }
             Err(e) => Err(TektonError::Reason(e.to_string())),
         },
         ("json", "tekton-sort") => {

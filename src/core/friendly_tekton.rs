@@ -137,9 +137,7 @@ fn build_string(
                     snippet_string += &snippet;
                 }
             }
-
             snippet_string += "\n}";
-
             Ok(snippet_string)
         }
     }
