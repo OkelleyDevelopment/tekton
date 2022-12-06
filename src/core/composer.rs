@@ -10,7 +10,7 @@ use super::{
     friendly_tekton::compose_friendly_snippets, snipmate_tekton::compose_snipmate_snippets,
 };
 use crate::{errors::TektonError, utils::read_lines};
-use std::fs;
+use std::fs::{self, read_to_string};
 
 /// The main snippet composition function
 ///
@@ -28,27 +28,15 @@ pub fn composer(fname: &String, types: (&str, &str)) -> Result<String, TektonErr
         },
         ("json", "snippet") => match fs::read_to_string(fname) {
             Ok(lines) => {
-                let friendlies = read_in_json_snippets(lines)?;
+                let friendlies = read_in_json_snippets(&lines)?;
                 compose_snipmate_snippets(friendlies)
             }
             Err(e) => Err(TektonError::Reason(e.to_string())),
         },
         ("json", "tekton-sort") => {
-            let snippets = match fs::read_to_string(fname) {
-                Ok(file) => {
-                    let friendlies = read_in_json_snippets(file)?;
-                    sort_friendly_snippets(friendlies)
-                }
-                Err(e) => Err(TektonError::Reason(e.to_string())),
-            };
-            match snippets {
-                Ok(s) => Ok(s),
-                Err(e) => Err(e),
-            }
+            let snippets = read_in_json_snippets(fname)?;
+            sort_friendly_snippets(snippets)
         }
-        ("snippet", "tekton-sort") => Err(TektonError::Reason(
-            "Sorting snipmate snippets isn't supported at this time.".to_string(),
-        )),
         _ => Err(TektonError::Reason(
             "Unsupported mapping attempted in the composer function".to_string(),
         )),
@@ -62,12 +50,12 @@ fn test_composer() {
     let res = composer(&name.to_string(), ("snippet", "json"));
 
     match res {
-        Err(e) => {
+        Err(error) => {
             assert_eq!(
-                e,
+                error,
                 TektonError::Reason("No such file or directory (os error 2)".to_string())
             );
         }
-        _ => {}
+        _ => {} // This case isn't possible as the file doesn't exist for this test
     }
 }

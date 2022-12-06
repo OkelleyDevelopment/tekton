@@ -27,6 +27,9 @@ pub struct ConversionCommand {
 
 #[derive(Debug, Args)]
 pub struct SortCommand {
-    /// The input filename
-    pub input_filename: String,
+    /// Path to the snippets
+    pub path: String,
+
+    /// If present, then the path should be to a directory
+    pub crawl: Option<String>,
 }
