@@ -10,7 +10,7 @@ use super::{
     friendly_tekton::compose_friendly_snippets, snipmate_tekton::compose_snipmate_snippets,
 };
 use crate::{errors::TektonError, utils::read_lines};
-use std::fs::{self, read_to_string};
+use std::fs::{self};
 
 /// The main snippet composition function
 ///
@@ -27,15 +27,11 @@ pub fn composer(fname: &String, types: (&str, &str)) -> Result<String, TektonErr
             Err(e) => Err(TektonError::Reason(e.to_string())),
         },
         ("json", "snippet") => match fs::read_to_string(fname) {
-            Ok(lines) => {
-                let friendlies = read_in_json_snippets(&lines)?;
-                compose_snipmate_snippets(friendlies)
-            }
+            Ok(lines) => compose_snipmate_snippets(read_in_json_snippets(&lines)?),
             Err(e) => Err(TektonError::Reason(e.to_string())),
         },
         ("json", "tekton-sort") => {
-            let snippets = read_in_json_snippets(fname)?;
-            sort_friendly_snippets(snippets)
+            sort_friendly_snippets(read_in_json_snippets(fname)?)
         }
         _ => Err(TektonError::Reason(
             "Unsupported mapping attempted in the composer function".to_string(),

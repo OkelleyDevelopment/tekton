@@ -145,6 +145,8 @@ pub fn sort_friendly_snippets(snippets: FriendlySnippets) -> Result<String, Tekt
 }
 
 /// Helper function to construct the JSON string representation of the `FriendlySnippets` struct
+/// 
+/// It is done like this to ensure we sort correctly. 
 fn build_string(
     names: Vec<String>,
     table: &std::collections::HashMap<String, FriendlySnippetBody>,
@@ -154,7 +156,6 @@ fn build_string(
             "Refusing to build string for 0 snippets".to_string(),
         )),
         _ => {
-            // Manually implement so that we can ensure sort
             let mut count: usize = 0;
             let target: usize = names.len();
             let mut snippet_string: String = String::from("{\n");
