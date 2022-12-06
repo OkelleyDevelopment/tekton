@@ -59,7 +59,6 @@ fn main() -> Result<(), TektonError> {
                     }
                 }
             }
-
             Ok(())
         }
     }
