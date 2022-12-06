@@ -15,7 +15,7 @@ pub struct FriendlySnippets {
 pub struct FriendlySnippetBody {
     pub prefix: String,
     pub body: Vec<String>,
-    pub description: String,
+    pub description: Option<String>,
 }
 
 impl FriendlySnippetBody {
@@ -23,7 +23,7 @@ impl FriendlySnippetBody {
         FriendlySnippetBody {
             prefix,
             body,
-            description,
+            description: Some(description),
         }
     }
 }
@@ -33,7 +33,6 @@ fn test_snippet_body_creation() {
     let body = FriendlySnippetBody::new("snip".to_string(), Vec::new(), "Description".to_string());
     assert_eq!(body.prefix, "snip".to_string());
     assert_eq!(body.body.len(), 0);
-    assert_eq!(body.description, "Description".to_string());
 }
 
 #[test]

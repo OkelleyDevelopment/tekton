@@ -72,14 +72,49 @@ pub fn convert_snipmate_to_friendlysnippets(snips: Vec<Snipmate>) -> FriendlySni
 }
 
 /// Helper function to read the JSON as a `FriendlySnippets` struct
-pub fn read_in_json_snippets(file: String) -> Result<FriendlySnippets, TektonError> {
+pub fn read_in_json_snippets(file: &str) -> Result<FriendlySnippets, TektonError> {
     let snippets: Result<FriendlySnippets, serde_json::Error> = serde_json::from_str(&file);
 
-    match snippets {
-        Ok(s) => Ok(s),
-        Err(e) => Err(TektonError::Reason(e.to_string())),
+    if let Ok(snippets) = snippets {
+        Ok(snippets)
+    } else {
+        // match dynamically_read_json_snippets(file) {
+        //     Ok(snippets) => Ok(snippets),
+        //     Err(e) => Err(e),
+        // }
+        unimplemented!()
     }
 }
+
+// /// Helper function to read in the JSON for the `FriendlySnippets`, given uncertain JSON formatting
+// ///
+// /// The `read_in_json_snippets` function should be preferred, however the ordering of fields in JSON isn't promised
+// /// and thus, this function builds the HashMap (backing the `FriendlySnippets` structure) by dynamically searching the
+// /// the table for the necessary fields.
+// pub fn dynamically_read_json_snippets(file: String) -> Result<FriendlySnippets, TektonError> {
+//     let mut snippets: HashMap<String, FriendlySnippetBody> = HashMap::new();
+//     let json: serde_json::Value = serde_json::from_str(&file).unwrap();
+
+//     if let Some(obj) = json.as_object() {
+//         for (k, v) in obj {
+//             let name = k;
+//             let prefix = v["prefix"].to_string();
+//             let mut body: Vec<String> = Vec::new();
+//             for line in v["body"].as_array().unwrap().iter() {
+//                 body.push(line.to_string());
+//             }
+
+//             println!("{:?}", body);
+//             let description = v["description"].to_string();
+
+//             let snip_body = FriendlySnippetBody::new(prefix, body, description);
+
+//             snippets.insert(name.to_string(), snip_body);
+//         }
+//     }
+
+//     Ok(FriendlySnippets { snippets })
+// }
 
 /// Helper function to retrive and sort the names of the snippets (the keys of the hashmap)
 fn get_friendly_snippet_keys(
