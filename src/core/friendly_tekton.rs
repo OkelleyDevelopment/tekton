@@ -10,7 +10,10 @@ use crate::{
     utils::get_input,
 };
 use regex::Regex;
-use std::{collections::{HashMap, BTreeMap}, fs};
+use std::{
+    collections::{BTreeMap, HashMap},
+    fs,
+};
 
 /// A helper function to handle Snipmate to JSON
 pub fn compose_friendly_snippets(lines: Vec<String>) -> Result<String, TektonError> {
@@ -20,14 +23,9 @@ pub fn compose_friendly_snippets(lines: Vec<String>) -> Result<String, TektonErr
     Ok(result)
 }
 
-/// A function that takes a Vec of FriendlySnippet structs and returns the string representation or a TektonError
+/// A function that takes the FriendlySnippet table and returns an ordered string representation or a TektonError
 pub fn build_friendly_string(friendlies: FriendlySnippets) -> Result<String, TektonError> {
-    if let Some(v) = get_friendly_snippet_keys(&friendlies.snippets) {
-        let string_rep = build_sorted_string(v, &friendlies.snippets)?;
-        Ok(string_rep)
-    } else {
-        Err(TektonError::Reason("No snippets provided".to_string()))
-    }
+    build_sorted_string(&friendlies.snippets)
 }
 
 /// A function to convert an array of Snipmate structs to an array of FriendlySnippet structs
@@ -103,8 +101,14 @@ pub fn dynamically_read_json_snippets(file: String) -> Result<FriendlySnippets, 
             let name = k;
             let prefix = v["prefix"].to_string();
             let mut body: Vec<String> = Vec::new();
-            for line in v["body"].as_array().unwrap().iter() {
-                body.push(line.to_string());
+
+            let temp_body = &v["body"];
+            if let Some(lines) = temp_body.as_array() {
+                for line in lines.iter() {
+                    body.push(line.to_string());
+                }
+            } else {
+                body.push(temp_body.to_string());
             }
 
             let description = v["description"].to_string();
@@ -117,52 +121,34 @@ pub fn dynamically_read_json_snippets(file: String) -> Result<FriendlySnippets, 
     Ok(FriendlySnippets { snippets })
 }
 
-/// Helper function to retrive and sort the names of the snippets (the keys of the hashmap)
-fn get_friendly_snippet_keys(
-    table: &std::collections::HashMap<String, FriendlySnippetBody>,
-) -> Option<Vec<String>> {
-    let keys = table.keys();
-    let mut names: Vec<String> = Vec::new();
-    for k in keys {
-        names.push(k.clone());
-    }
-    names.sort_by_key(|a| a.to_lowercase()); // this might cause problems (leaving note for easy search)
-    Some(names)
-}
-
 /// Function that builds a string representing the snippets in sorted order
 pub fn sort_friendly_snippets(snippets: FriendlySnippets) -> Result<String, TektonError> {
-
-    match get_friendly_snippet_keys(&snippets.snippets) {
-        Some(list) => {
-            let string_rep = build_sorted_string(list, &snippets.snippets)?;
-            Ok(string_rep)
-        }
-        None => Err(TektonError::Reason(
-            "Cannot sort nor write `None`.".to_string(),
+    let table = &snippets.snippets;
+    match table.len() {
+        0 => Err(TektonError::Reason(
+            "Refusing to build string for 0 snippets".to_string(),
         )),
+        _ => build_sorted_string(table),
     }
 }
 
-/// Helper function to construct the JSON string representation of the `FriendlySnippets` struct
+/// Helper function that consumes a FriendlySnippet table and returns the
+/// ordered JSON string.
 ///
-/// It is done like this to ensure we sort correctly.
 fn build_sorted_string(
-    names: Vec<String>,
     table: &std::collections::HashMap<String, FriendlySnippetBody>,
 ) -> Result<String, TektonError> {
-    // 1. Check that we have something to work with
-    match names.len() {
+    match table.len() {
         0 => Err(TektonError::Reason(
             "Refusing to build string for 0 snippets".to_string(),
         )),
         _ => {
             // 2. This provides an ordering
-            let ordered: BTreeMap<_, _> = table.into_iter().collect();
-            // Return the result
+            let ordered: BTreeMap<_, _> = table.iter().collect();
+            // 3. Return the result
             match serde_json::to_string_pretty(&ordered) {
                 Ok(snippets) => Ok(snippets),
-                Err(e) => Err(TektonError::Reason(e.to_string()))
+                Err(e) => Err(TektonError::Reason(e.to_string())),
             }
         }
     }
