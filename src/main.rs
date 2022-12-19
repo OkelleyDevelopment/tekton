@@ -48,7 +48,6 @@ fn main() -> Result<(), TektonError> {
                 }
                 let fname: String = file.into_os_string().to_str().unwrap().to_string(); // this isn't the best thing on Earth.
                 let extensions = (get_extension_from_filename(&fname).unwrap(), SORT);
-                //println!("Dynamic | Extensions: {:?}", extensions);
                 match composer(&fname, extensions) {
                     Ok(snippets) => {
                         println!("Writing the file post sort");
