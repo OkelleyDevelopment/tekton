@@ -38,21 +38,21 @@ pub fn write_to_file(name: String, finished: String) {
 }
 
 /// Helper function to get the file extension being passed in.
-pub fn get_extension_from_filename(filename: &str) -> Option<&str> {
+pub fn get_filetype_extension(filename: &str) -> Option<&str> {
     Path::new(filename).extension().and_then(OsStr::to_str)
 }
 
 #[test]
 fn test_empty_string_on_extension() {
     let filename = String::from("");
-    let result = get_extension_from_filename(&filename);
+    let result = get_filetype_extension(&filename);
     assert_eq!(result, None);
 }
 
 #[test]
 fn test_extension() {
     let filename = String::from("example.json");
-    let result = get_extension_from_filename(&filename);
+    let result = get_filetype_extension(&filename);
     assert_ne!(result, None);
     assert_eq!(result.unwrap(), "json");
 }
@@ -60,7 +60,7 @@ fn test_extension() {
 #[test]
 fn test_long_filename_extension() {
     let filename = String::from("long_file_name_example.json");
-    let result = get_extension_from_filename(&filename);
+    let result = get_filetype_extension(&filename);
     assert_ne!(result, None);
     assert_eq!(result.unwrap(), "json");
 }
@@ -68,7 +68,7 @@ fn test_long_filename_extension() {
 #[test]
 fn test_extension_on_snippet() {
     let filename = String::from("example.snippet");
-    let result = get_extension_from_filename(&filename);
+    let result = get_filetype_extension(&filename);
     assert_ne!(result, None);
     assert_eq!(result.unwrap(), "snippet");
 }
@@ -76,7 +76,7 @@ fn test_extension_on_snippet() {
 #[test]
 fn test_filename_with_parens_extension() {
     let filename = String::from("exam(file)ple.json");
-    let result = get_extension_from_filename(&filename);
+    let result = get_filetype_extension(&filename);
     assert_ne!(result, None);
     assert_eq!(result.unwrap(), "json");
 }
@@ -84,7 +84,7 @@ fn test_filename_with_parens_extension() {
 #[test]
 fn test_filename_with_braces_extension() {
     let filename = String::from("exam{file}ple.json");
-    let result = get_extension_from_filename(&filename);
+    let result = get_filetype_extension(&filename);
     assert_ne!(result, None);
     assert_eq!(result.unwrap(), "json");
 }
@@ -92,7 +92,7 @@ fn test_filename_with_braces_extension() {
 #[test]
 fn test_filename_with_brackets_extension() {
     let filename = String::from("exam[file]ple.json");
-    let result = get_extension_from_filename(&filename);
+    let result = get_filetype_extension(&filename);
     assert_ne!(result, None);
     assert_eq!(result.unwrap(), "json");
 }
