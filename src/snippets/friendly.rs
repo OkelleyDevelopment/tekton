@@ -19,6 +19,7 @@ pub struct FriendlySnippetBody {
 }
 
 impl FriendlySnippetBody {
+    /// A constructor function for the Snippet body
     pub fn new(prefix: String, body: Vec<String>, description: String) -> FriendlySnippetBody {
         FriendlySnippetBody {
             prefix,
