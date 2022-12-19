@@ -41,16 +41,19 @@ fn main() -> Result<(), TektonError> {
                 files.push(PathBuf::from(sort.path));
             }
 
+            let mut file_count = 0;
             for file in files {
                 if file.metadata().unwrap().is_dir() {
                     println!("Skipping directory. Supply a crawl argument if you wish to descend into {}.",file.as_path().display());
                     continue;
                 }
+                file_count += 1;
                 let fname: String = file.into_os_string().to_str().unwrap().to_string(); // this isn't the best thing on Earth.
+                //println!("Currently sorting: {}", fname);
                 let extensions = (get_extension_from_filename(&fname).unwrap(), SORT);
                 match composer(&fname, extensions) {
                     Ok(snippets) => {
-                        println!("Writing the file post sort");
+                        //println!("Writing the file post sort");
                         write_to_file(fname, snippets);
                     }
                     Err(e) => {
@@ -58,6 +61,7 @@ fn main() -> Result<(), TektonError> {
                     }
                 }
             }
+            println!("Files sorted: {}", file_count);
             Ok(())
         }
     }
