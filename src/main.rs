@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use tekton::args::{TektonArgs, TektonEntity};
 use tekton::core::composer::composer;
 use tekton::errors::TektonError;
-use tekton::utils::{get_extension_from_filename, write_to_file};
+use tekton::utils::{get_filetype_extension, write_to_file};
 use walkdir::WalkDir;
 
 // A named constant for the sort option
@@ -18,8 +18,8 @@ fn main() -> Result<(), TektonError> {
     match args.entity_type {
         TektonEntity::Convert(convert) => {
             let file_extensions = (
-                get_extension_from_filename(&convert.input_filename).unwrap(),
-                get_extension_from_filename(&convert.output_filename).unwrap(),
+                get_filetype_extension(&convert.input_filename).unwrap(),
+                get_filetype_extension(&convert.output_filename).unwrap(),
             );
             output = convert.output_filename.to_string();
             let snippets = composer(&convert.input_filename, file_extensions)?;
@@ -49,11 +49,9 @@ fn main() -> Result<(), TektonError> {
                 }
                 file_count += 1;
                 let fname: String = file.into_os_string().to_str().unwrap().to_string(); // this isn't the best thing on Earth.
-                //println!("Currently sorting: {}", fname);
-                let extensions = (get_extension_from_filename(&fname).unwrap(), SORT);
+                let extensions = (get_filetype_extension(&fname).unwrap(), SORT);
                 match composer(&fname, extensions) {
                     Ok(snippets) => {
-                        //println!("Writing the file post sort");
                         write_to_file(fname, snippets);
                     }
                     Err(e) => {
