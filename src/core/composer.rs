@@ -30,9 +30,7 @@ pub fn composer(fname: &String, types: (&str, &str)) -> Result<String, TektonErr
             Ok(lines) => compose_snipmate_snippets(read_in_json_snippets(&lines)?),
             Err(e) => Err(TektonError::Reason(e.to_string())),
         },
-        ("json", "tekton-sort") => {
-            sort_friendly_snippets(read_in_json_snippets(fname)?)
-        }
+        ("json", "tekton-sort") => sort_friendly_snippets(read_in_json_snippets(fname)?),
         _ => Err(TektonError::Reason(
             "Unsupported mapping attempted in the composer function".to_string(),
         )),
