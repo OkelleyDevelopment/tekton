@@ -77,8 +77,10 @@ pub fn read_in_json_snippets(file_name: &str) -> Result<FriendlySnippets, Tekton
         let snippets: Result<FriendlySnippets, serde_json::Error> =
             serde_json::from_str(&file_contents);
         if let Ok(snippets) = snippets {
+            //println!("Serde handled the snippets");
             return Ok(snippets);
         } else if let Ok(snippets) = dynamically_read_json_snippets(file_contents) {
+            println!("Dynamically handled the snippets");
             return Ok(snippets);
         }
     }
@@ -98,22 +100,25 @@ pub fn dynamically_read_json_snippets(file: String) -> Result<FriendlySnippets, 
 
     if let Some(obj) = json.as_object() {
         for (k, v) in obj {
-            let name = k;
-            let prefix = v["prefix"].to_string();
+            let name = k.clone();
+
+            let prefix = v["prefix"].as_str().unwrap().to_string();
+            println!("1. ----> {}", prefix);
             let mut body: Vec<String> = Vec::new();
 
             let temp_body = &v["body"];
             if let Some(lines) = temp_body.as_array() {
                 for line in lines.iter() {
-                    body.push(line.to_string());
+                    body.push(line.as_str().unwrap().to_string());
                 }
             } else {
-                body.push(temp_body.to_string());
+                body.push(temp_body.as_str().unwrap_or("").to_string());
             }
 
-            let description = v["description"].to_string();
+            let description = v["description"].as_str().unwrap().to_string();
             let snip_body = FriendlySnippetBody::new(prefix, body, description);
 
+            println!("{:?}", snip_body);
             snippets.insert(name.to_string(), snip_body);
         }
     }
@@ -123,6 +128,7 @@ pub fn dynamically_read_json_snippets(file: String) -> Result<FriendlySnippets, 
 
 /// Function that builds a string representing the snippets in sorted order
 pub fn sort_friendly_snippets(snippets: FriendlySnippets) -> Result<String, TektonError> {
+    println!("{:?}", &snippets.snippets);
     let table = &snippets.snippets;
     match table.len() {
         0 => Err(TektonError::Reason(
@@ -147,9 +153,121 @@ fn build_sorted_string(
             let ordered: BTreeMap<_, _> = table.iter().collect();
             // 3. Return the result
             match serde_json::to_string_pretty(&ordered) {
-                Ok(snippets) => Ok(snippets),
+                Ok(snippets) => {
+                    //println!("{:?}", snippets);
+                    Ok(snippets)
+                }
                 Err(e) => Err(TektonError::Reason(e.to_string())),
             }
         }
     }
+}
+
+#[test]
+fn test_standard_json_reading() {
+    let file = r#"{
+        "beta": {
+          "prefix": "println",
+          "body": ["println!(\"${1}\");"],
+          "description": "println!(…);"
+        },
+        "alpha": {
+          "prefix": "print",
+          "body": ["print!(\"${1}\");"],
+          "description": "print!(…);"
+        }
+      }"#
+    .to_string();
+
+    let snippets: Result<FriendlySnippets, serde_json::Error> = serde_json::from_str(&file);
+
+    match snippets {
+        Ok(res) => {
+            let expected_struct = FriendlySnippetBody::new(
+                "println".to_string(),
+                vec!["println!(\"${1}\");".to_string()],
+                "println!(…);".to_string(),
+            );
+            assert_eq!(res.snippets.len(), 2);
+            let item = res.snippets.get("beta").unwrap();
+            assert_eq!(item.prefix, expected_struct.prefix);
+            assert_eq!(item, &expected_struct);
+        }
+        Err(e) => {
+            println!("Error: {}",e.to_string());
+            assert!(false);
+        }
+    }
+}
+
+#[test]
+fn test_dyn_json_reading() {
+    let file = r#"{
+      "beta": {
+        "prefix": "println",
+        "body": ["println!(\"${1}\");"],
+        "description": "println!(…);"
+      },
+      "alpha": {
+        "prefix": "print",
+        "body": ["print!(\"${1}\");"],
+        "description": "print!(…);"
+      }
+    }"#
+    .to_string();
+
+    let res = dynamically_read_json_snippets(file);
+
+    match res {
+        Ok(res) => {
+            let expected_struct = FriendlySnippetBody::new(
+                "println".to_string(),
+                vec!["println!(\"${1}\");".to_string()],
+                "println!(…);".to_string(),
+            );
+            assert_eq!(res.snippets.len(), 2);
+            let item = res.snippets.get("beta").unwrap();
+            assert_eq!(item.prefix, expected_struct.prefix);
+            assert_eq!(item, &expected_struct);
+        },
+        Err(e) => {
+            println!("Error: {}",e.to_string());
+            assert!(false);
+        }
+    }
+
+}
+
+
+#[test]
+fn test_jekyll() {
+    let file = r#"{
+    "Filter downcase": {
+      "prefix": "downcase",
+      "description": "String filter: downcase",
+      "body": "| downcase }}"
+    }}"#.to_string();
+
+
+    let res = dynamically_read_json_snippets(file);
+
+    match res {
+        Ok(res) => {
+            let expected_struct = FriendlySnippetBody::new(
+                "downcase".to_string(),
+                vec!["| downcase }}".to_string()],
+                "String filter: downcase".to_string(),
+            );
+            assert_eq!(res.snippets.len(), 1);
+            let item = res.snippets.get("Filter downcase").unwrap();
+            assert_eq!(item.prefix, expected_struct.prefix);
+            assert_eq!(item, &expected_struct);
+        },
+        Err(e) => {
+            println!("Error: {}",e.to_string());
+            assert!(false);
+        }
+    }
+
+
 }
