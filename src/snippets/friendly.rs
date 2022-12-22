@@ -29,6 +29,12 @@ impl FriendlySnippetBody {
     }
 }
 
+// impl Display for FriendlySnippetBody {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         write!(f, "")
+//     }
+// }
+
 #[test]
 fn test_snippet_body_creation() {
     let body = FriendlySnippetBody::new("snip".to_string(), Vec::new(), "Description".to_string());
