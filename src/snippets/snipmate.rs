@@ -6,8 +6,11 @@ use serde::Serialize;
 /// A structure representing the vim-snippet/ Snipmate format
 #[derive(Debug, Serialize)]
 pub struct Snipmate {
+    /// The trigger for the snippet
     pub prefix: String,
+    /// The content of the snippet
     pub body: Vec<String>,
+    /// A small summary of the snippet 
     pub description: String,
 }
 
