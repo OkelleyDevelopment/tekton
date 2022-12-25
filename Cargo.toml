@@ -11,10 +11,6 @@ categories = ["command-line-utilities"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-["lib"]
-name = 'tekton'
-path = 'src/lib.rs'
-
 [[bin]]
 name="tekton"
 path="./src/main.rs"
