@@ -5,9 +5,10 @@ use crate::{
     errors::TektonError,
     snippets::{
         friendly::{FriendlySnippetBody, FriendlySnippets},
+        multi_prefix_friendly::FriendlySnippet,
         snipmate::Snipmate,
     },
-    utils::get_input,
+    utils::{clear_terminal, get_input},
 };
 use regex::Regex;
 use std::{
@@ -54,7 +55,7 @@ pub fn convert_snipmate_to_friendlysnippets(snips: Vec<Snipmate>) -> FriendlySni
         match serde_json::to_string_pretty(&friendly_body) {
             Ok(snip) => {
                 count += 1;
-                print!("\x1B[2J\x1B[1;1H"); // Clear terminal
+                clear_terminal();
                 println!(
                     "Snippet {} of {}:\n{}\n\nEnter name below:",
                     count, target, snip
@@ -63,7 +64,6 @@ pub fn convert_snipmate_to_friendlysnippets(snips: Vec<Snipmate>) -> FriendlySni
                 friendly_handle.snippets.insert(key, friendly_body);
             }
             Err(e) => {
-                // Err(TektonError::Reason(e.to_string())
                 eprintln!("Match had an error in conversion ----> {}", e);
             }
         }
@@ -73,62 +73,138 @@ pub fn convert_snipmate_to_friendlysnippets(snips: Vec<Snipmate>) -> FriendlySni
 
 /// Helper function to read the JSON as a `FriendlySnippets` struct
 pub fn read_in_json_snippets(file_name: &str) -> Result<FriendlySnippets, TektonError> {
-    if let Ok(file_contents) = fs::read_to_string(&file_name) {
-        let snippets: Result<FriendlySnippets, serde_json::Error> =
-            serde_json::from_str(&file_contents);
-        if let Ok(snippets) = snippets {
-            //println!("Serde handled the snippets");
-            return Ok(snippets);
-        } else if let Ok(snippets) = dynamically_read_json_snippets(file_contents) {
-            println!("Dynamically handled the snippets");
-            return Ok(snippets);
+    let file_contents = fs::read_to_string(&file_name);
+
+    match file_contents {
+        Ok(file_contents) => {
+            let snippets: Result<FriendlySnippets, serde_json::Error> =
+                serde_json::from_str(&file_contents);
+
+            match snippets {
+                Ok(snippets) => {
+                    return Ok(snippets);
+                }
+                Err(_) => match dynamically_read_json_snippets(file_contents) {
+                    Ok(snippets) => {
+                        return Ok(snippets);
+                    }
+                    Err(e) => Err(e),
+                },
+            }
         }
+        Err(e) => Err(TektonError::Reason(e.to_string())),
     }
-    Err(TektonError::Reason(
-        "Failed to read in the JSON as a string".to_string(),
-    ))
 }
 
 /// Helper function to read in the JSON for the `FriendlySnippets`, given uncertain JSON formatting
 ///
-/// The `read_in_json_snippets` function should be preferred, however the ordering of fields in JSON isn't promised
+/// The [read_in_json_snippets] function should be preferred, however the ordering of fields in JSON isn't promised
 /// and thus, this function builds the HashMap (backing the `FriendlySnippets` structure) by dynamically searching the
 /// the table for the necessary fields.
 pub fn dynamically_read_json_snippets(file: String) -> Result<FriendlySnippets, TektonError> {
     let mut snippets: HashMap<String, FriendlySnippetBody> = HashMap::new();
     let json: serde_json::Value = serde_json::from_str(&file).unwrap();
+    let mut snippets_to_fix: Vec<(String, FriendlySnippetBody)> = Vec::new();
 
     if let Some(obj) = json.as_object() {
         for (k, v) in obj {
             let name = k.clone();
 
-            let prefix = v["prefix"].as_str().unwrap().to_string();
-            println!("1. ----> {}", prefix);
-            let mut body: Vec<String> = Vec::new();
+            let prefix: String = String::new(); // This will be set later in thie function
 
-            let temp_body = &v["body"];
-            if let Some(lines) = temp_body.as_array() {
-                for line in lines.iter() {
-                    body.push(line.as_str().unwrap().to_string());
-                }
-            } else {
-                body.push(temp_body.as_str().unwrap_or("").to_string());
+            let body = retrieve_body(&v["body"]);
+
+            let mut description: String = String::new();
+            if let Some(val) = v["description"].as_str() {
+                description.push_str(val);
             }
 
-            let description = v["description"].as_str().unwrap().to_string();
-            let snip_body = FriendlySnippetBody::new(prefix, body, description);
+            let mut snip_body = FriendlySnippetBody::new(prefix, body, description);
 
-            println!("{:?}", snip_body);
+            let pref_candidate = retrieve_prefix(&v["prefix"]);
+
+            match pref_candidate {
+                Some(pref) => {
+                    snip_body.prefix = pref;
+                }
+                None => {
+                    snippets_to_fix.push((name, snip_body));
+                    continue; // skip inserting nothing
+                }
+            }
             snippets.insert(name.to_string(), snip_body);
+        }
+
+        // Note for future revision:
+        // We could return a tuple of (snippets, snippets_to_fix)
+        // therefore making the next chunk of code it's own function
+        // and avoiding user I/O inside the "read in function"
+        if !snippets_to_fix.is_empty() {
+            let mut count = 0;
+            let total = snippets_to_fix.len();
+            loop {
+                if count == total {
+                    break;
+                }
+
+                if let Some((name, snip_body)) = snippets_to_fix.pop() {
+                    count += 1;
+                    println!("Fixing snippet {} of {}", count, total);
+                    let snip_body = handle_missing_prefix(&name, snip_body);
+                    snippets.insert(name.to_string(), snip_body);
+                }
+            }
         }
     }
 
     Ok(FriendlySnippets { snippets })
 }
 
+fn handle_missing_prefix(name: &str, mut snip_body: FriendlySnippetBody) -> FriendlySnippetBody {
+    println!("---- Snippet: {} ---\n{:#?}\n--------", name, snip_body);
+    println!("Enter a prefix:");
+    loop {
+        let input = get_input();
+        println!("Proceed? (y/n):");
+        let resp = get_input().to_lowercase();
+        // println!("The response ====> {}", resp);
+        if resp == "y" {
+            snip_body.prefix = input;
+            break;
+        }
+
+        println!("Enter a new prefix: ")
+    }
+    print!("\x1B[2J\x1B[1;1H"); // Clear terminal
+    snip_body
+}
+
+/// Function to handle the parsing of the prefix for a JSON snippet
+fn retrieve_prefix(val: &serde_json::Value) -> Option<String> {
+    if let Some(prefix) = val.as_str() {
+        Some(prefix.to_string())
+    } else {
+        None
+    }
+}
+
+/// Function to handle processing the body of a JSON snippet
+pub fn retrieve_body(val: &serde_json::Value) -> Vec<String> {
+    let mut body: Vec<String> = Vec::new();
+    if let Some(lines) = val.as_array() {
+        for line in lines.iter() {
+            body.push(line.as_str().unwrap_or("").to_string());
+        }
+    } else {
+        body.push(val.as_str().unwrap_or("").to_string());
+    }
+
+    body
+}
+
 /// Function that builds a string representing the snippets in sorted order
 pub fn sort_friendly_snippets(snippets: FriendlySnippets) -> Result<String, TektonError> {
-    println!("{:?}", &snippets.snippets);
+    //println!("{:?}", &snippets.snippets);
     let table = &snippets.snippets;
     match table.len() {
         0 => Err(TektonError::Reason(
@@ -138,7 +214,34 @@ pub fn sort_friendly_snippets(snippets: FriendlySnippets) -> Result<String, Tekt
     }
 }
 
-/// Helper function that consumes a FriendlySnippet table and returns the
+/// Function that builds a string representing the snippets in sorted order
+pub fn order_friendly_snippets(snippets: FriendlySnippet) -> Result<String, TektonError> {
+    //println!("{:?}", &snippets.snippets);
+    let table = &snippets.snippets;
+    match table.len() {
+        0 => Err(TektonError::Reason(
+            "Refusing to build string for 0 snippets".to_string(),
+        )),
+        _ => {
+            match table.len() {
+                0 => Err(TektonError::Reason(
+                    "Refusing to build string for 0 snippets".to_string(),
+                )),
+                _ => {
+                    // 2. This provides an ordering
+                    let ordered: BTreeMap<_, _> = table.iter().collect();
+                    // 3. Return the result
+                    match serde_json::to_string_pretty(&ordered) {
+                        Ok(snippets) => Ok(snippets),
+                        Err(e) => Err(TektonError::Reason(e.to_string())),
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// Helper function that consumes a FriendlySnippets struct and returns the
 /// ordered JSON string.
 ///
 fn build_sorted_string(
@@ -153,10 +256,7 @@ fn build_sorted_string(
             let ordered: BTreeMap<_, _> = table.iter().collect();
             // 3. Return the result
             match serde_json::to_string_pretty(&ordered) {
-                Ok(snippets) => {
-                    //println!("{:?}", snippets);
-                    Ok(snippets)
-                }
+                Ok(snippets) => Ok(snippets),
                 Err(e) => Err(TektonError::Reason(e.to_string())),
             }
         }
@@ -194,7 +294,7 @@ fn test_standard_json_reading() {
             assert_eq!(item, &expected_struct);
         }
         Err(e) => {
-            println!("Error: {}",e.to_string());
+            println!("Error: {}", e.to_string());
             assert!(false);
         }
     }
@@ -229,15 +329,13 @@ fn test_dyn_json_reading() {
             let item = res.snippets.get("beta").unwrap();
             assert_eq!(item.prefix, expected_struct.prefix);
             assert_eq!(item, &expected_struct);
-        },
+        }
         Err(e) => {
-            println!("Error: {}",e.to_string());
+            println!("Error: {}", e.to_string());
             assert!(false);
         }
     }
-
 }
-
 
 #[test]
 fn test_jekyll() {
@@ -246,8 +344,8 @@ fn test_jekyll() {
       "prefix": "downcase",
       "description": "String filter: downcase",
       "body": "| downcase }}"
-    }}"#.to_string();
-
+    }}"#
+    .to_string();
 
     let res = dynamically_read_json_snippets(file);
 
@@ -262,12 +360,10 @@ fn test_jekyll() {
             let item = res.snippets.get("Filter downcase").unwrap();
             assert_eq!(item.prefix, expected_struct.prefix);
             assert_eq!(item, &expected_struct);
-        },
+        }
         Err(e) => {
-            println!("Error: {}",e.to_string());
+            println!("Error: {}", e.to_string());
             assert!(false);
         }
     }
-
-
 }

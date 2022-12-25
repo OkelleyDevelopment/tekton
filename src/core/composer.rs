@@ -5,10 +5,13 @@
 //! simple.
 //!
 
-use super::friendly_tekton::{read_in_json_snippets, sort_friendly_snippets};
+use super::friendly_tekton::{
+    order_friendly_snippets, read_in_json_snippets, sort_friendly_snippets,
+};
 use super::{
     friendly_tekton::compose_friendly_snippets, snipmate_tekton::compose_snipmate_snippets,
 };
+use crate::snippets::multi_prefix_friendly::dynamic_prefix_combinator;
 use crate::{errors::TektonError, utils::read_lines};
 use std::fs::{self};
 
@@ -34,6 +37,17 @@ pub fn composer(fname: &String, types: (&str, &str)) -> Result<String, TektonErr
         _ => Err(TektonError::Reason(
             "Unsupported mapping attempted in the composer function".to_string(),
         )),
+    }
+}
+
+/// Last ditch effort to build the snippets for sorting
+pub fn last_composer(fname: &str) -> Result<String, TektonError> {
+    match fs::read_to_string(&fname) {
+        Ok(file_content) => {
+            let snippets = dynamic_prefix_combinator(&file_content)?;
+            order_friendly_snippets(snippets)
+        }
+        Err(e) => Err(TektonError::Reason(e.to_string())),
     }
 }
 
