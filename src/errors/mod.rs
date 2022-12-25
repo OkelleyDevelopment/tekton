@@ -5,12 +5,14 @@ use core::fmt;
 pub enum TektonError {
     /// An error with a custom message as a String
     Reason(String),
+    Switch(bool),
 }
 
 impl fmt::Display for TektonError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let string = match self {
             TektonError::Reason(r) => r.clone(),
+            TektonError::Switch(b) => b.to_string(),
         };
         write!(f, "{}", string)
     }
