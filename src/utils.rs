@@ -18,6 +18,12 @@ pub fn get_input() -> String {
     return input.trim().to_string();
 }
 
+/// A helper function to clear the screen and
+/// provide better flexibility later on.
+pub fn clear_terminal() {
+    print!("\x1B[2J\x1B[1;1H"); // Clear terminal
+}
+
 /// Function to read the lines of a file and returns a Vec of Strings
 pub fn read_lines(fname: &String) -> Result<Vec<String>, Error> {
     let file = File::open(fname)?;

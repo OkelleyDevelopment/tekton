@@ -11,7 +11,7 @@ pub struct FriendlySnippets {
 }
 
 /// A struct representing the body of a snippet from the `FriendlySnippets` hashmap
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct FriendlySnippetBody {
     pub prefix: String,
     pub body: Vec<String>,
@@ -28,12 +28,6 @@ impl FriendlySnippetBody {
         }
     }
 }
-
-// impl Display for FriendlySnippetBody {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         write!(f, "")
-//     }
-// }
 
 #[test]
 fn test_snippet_body_creation() {
