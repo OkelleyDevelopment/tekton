@@ -1,6 +1,6 @@
 use crate::{
     errors::TektonError,
-    snippets::{friendly::FriendlySnippets, snipmate::Snipmate},
+    models::{friendly::FriendlySnippets, snipmate::Snipmate},
 };
 use regex::{bytes::RegexSetBuilder, Regex};
 
@@ -43,7 +43,7 @@ pub fn create_snipmate_structs_from_json(
         let snip: Snipmate = Snipmate {
             prefix: v.prefix,
             body: v.body,
-            description,
+            description: Some(description),
         };
         count += 1;
         snipmate_snippets.push(snip)
@@ -80,7 +80,7 @@ pub fn build_snippets_from_file(lines: Vec<String>) -> Vec<Snipmate> {
             desc = re.replace_all(&desc, "").to_string();
             desc = desc.replace('\"', "");
             // Building the snippet and adding to the array
-            snippets.push(Snipmate::new(name, Vec::new(), desc));
+            snippets.push(Snipmate::new(name, Vec::new(), Some(desc)));
         }
         // Continue to add the body of the snippet to the most recently
         // added snippet struct.
@@ -93,4 +93,63 @@ pub fn build_snippets_from_file(lines: Vec<String>) -> Vec<Snipmate> {
         }
     }
     snippets
+}
+
+#[test]
+fn test_building_a_snippet_from_file() {
+    let input: Vec<String> = vec!["snippet test".to_string(), "   test snippet".to_string()];
+
+    let snippets = build_snippets_from_file(input);
+
+    assert_eq!(snippets.len(), 1);
+    let snip = snippets.get(0).unwrap();
+    let expected = Snipmate::new(
+        "test".to_string(),
+        vec!["   test snippet".to_string()],
+        Some("".to_string()),
+    );
+    assert_eq!(snip.prefix, expected.prefix);
+    assert_eq!(snip.body, expected.body);
+    assert_eq!(snip.description, expected.description);
+}
+
+#[test]
+fn test_building_snippets_from_file() {
+    let input: Vec<String> = vec![
+        "snippet test".to_string(),
+        "   test snippet".to_string(),
+        "snippet test2".to_string(),
+        "    a second snippet".to_string(),
+        "    with several".to_string(),
+        "    lines.".to_string(),
+    ];
+
+    let snippets = build_snippets_from_file(input);
+
+    assert_eq!(snippets.len(), 2);
+    let snip = snippets.get(0).unwrap();
+    let snip2 = snippets.get(1).unwrap();
+    let expected = vec![
+        Snipmate::new(
+            "test".to_string(),
+            vec!["   test snippet".to_string()],
+            Some("".to_string()),
+        ),
+        Snipmate::new(
+            "test2".to_string(),
+            vec![
+                "    a second snippet".to_string(),
+                "    with several".to_string(),
+                "    lines.".to_string(),
+            ],
+            Some("".to_string()),
+        ),
+    ];
+    assert_eq!(snip.prefix, expected.get(0).unwrap().prefix);
+    assert_eq!(snip.body, expected.get(0).unwrap().body);
+    assert_eq!(snip.description, expected.get(0).unwrap().description);
+
+    assert_eq!(snip2.prefix, expected.get(1).unwrap().prefix);
+    assert_eq!(snip2.body, expected.get(1).unwrap().body);
+    assert_eq!(snip2.description, expected.get(1).unwrap().description);
 }

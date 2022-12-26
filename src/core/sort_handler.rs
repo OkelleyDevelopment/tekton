@@ -3,9 +3,9 @@ use std::path::PathBuf;
 use walkdir::WalkDir;
 
 use crate::{
-    args::SortCommand,
     core::composer::{composer, last_composer},
     errors::TektonError,
+    models::args::SortCommand,
     utils::{get_filetype_extension, write_to_file},
 };
 
@@ -50,7 +50,7 @@ pub fn sort_handler(sort: SortCommand) -> Result<(), TektonError> {
                 Ok(s) => write_to_file(name.to_string(), s),
                 Err(e) => {
                     println!("[Tekton Error]: Unable to process file: `{}`", &name);
-                    println!("{}\n", e.to_string());
+                    println!("{}\n", e);
                     file_count -= 1;
                 }
             }

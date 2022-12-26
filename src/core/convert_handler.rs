@@ -1,6 +1,6 @@
 use crate::{
-    args::ConversionCommand,
     errors::TektonError,
+    models::args::ConversionCommand,
     utils::{get_filetype_extension, write_to_file},
 };
 

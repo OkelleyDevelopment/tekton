@@ -38,7 +38,7 @@ impl MultiBody {
 pub fn dynamic_prefix_combinator(file_content: &str) -> Result<FriendlySnippet, TektonError> {
     let mut snippets: HashMap<String, MultiBody> = HashMap::new();
     // println!("{}", file);
-    let json: serde_json::Value = serde_json::from_str(&file_content).unwrap();
+    let json: serde_json::Value = serde_json::from_str(file_content).unwrap();
 
     if let Some(obj) = json.as_object() {
         for (k, v) in obj {
