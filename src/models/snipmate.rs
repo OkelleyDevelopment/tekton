@@ -44,7 +44,7 @@ impl Snipmate {
             s = s + " " + description;
         }
 
-        s = s + "\n"; // Catch the new line after either the prefix or the end of the description
+        s += "\n"; // Catch the new line after either the prefix or the end of the description
 
         s = re3.replace_all(&s, '"'.to_string()).to_string();
 
