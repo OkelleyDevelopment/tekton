@@ -39,9 +39,12 @@ impl Snipmate {
         // Note: this is done in an attempt to remove the extra quotes needed in JSON
         s = str::replace(&s, "\"", "");
 
+        // Check for a description, append if its there
         if let Some(description) = &self.description {
-            s = s + " " + description + "\n";
+            s = s + " " + description;
         }
+
+        s = s + "\n"; // Catch the new line after either the prefix or the end of the description
 
         s = re3.replace_all(&s, '"'.to_string()).to_string();
 
@@ -57,7 +60,7 @@ impl Snipmate {
 }
 
 #[test]
-fn test_vim_snippet_creation() {
+fn test_vim_snippet_creation_with_description() {
     let snip = Snipmate::new(
         String::from("test"),
         Vec::new(),
@@ -68,6 +71,21 @@ fn test_vim_snippet_creation() {
     assert_eq!(
         snip.description,
         Some("An epic test description".to_string())
+    );
+}
+
+#[test]
+fn test_vim_snippet_creation_without_description() {
+    let snip = Snipmate::new(
+        String::from("test"),
+        Vec::new(),
+        None,
+    );
+    assert_eq!(snip.prefix, "test".to_string());
+    assert_eq!(snip.body.len(), 0);
+    assert_eq!(
+        snip.description,
+        None
     );
 }
 
@@ -84,5 +102,23 @@ fn test_vim_snippet_display() {
     assert_eq!(
         string_rep,
         String::from("snippet test An epic test description\n\tA line of snippet\n")
+    );
+}
+
+
+
+#[test]
+fn test_vim_snippet_display_without_description() {
+    let mut snip = Snipmate::new(
+        String::from("test"),
+        Vec::new(),
+        None,
+    );
+    snip.body.push(String::from("A line of snippet"));
+    let string_rep = snip.display();
+
+    assert_eq!(
+        string_rep,
+        String::from("snippet test\n\tA line of snippet\n")
     );
 }

@@ -29,7 +29,6 @@ pub struct ConversionCommand {
 pub struct SortCommand {
     /// Path to the snippets
     pub path: String,
-
     /// If present, then the path should be to a directory
     pub crawl: Option<String>,
 }
