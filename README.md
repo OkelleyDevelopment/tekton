@@ -26,8 +26,15 @@ To convert:
 The current mappings support bidirectional conversion between Snipmate (`.snippet`) and JSON
 
 To sort: 
-- `tekton sort <INPUT_FILENAME>`
+- `tekton sort <INPUT_FILENAME>` [crawl]
+
+Note: If anything appears after the `<INPUT_FILENAME>` the program assumes the user wants to crawl directories for files.
+
+## Current Limitations
+
+- The conversion doesn't process in large batches of files like the sort. This is intentional as conversions between formats should be isolated and limited in scope.
 
 ## Acknowledgements
 
-- My impatience for doing this by hand and desire to automate everything
+- My impatience for doing this by hand 
+- A desire to automate everything
