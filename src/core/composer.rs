@@ -11,7 +11,7 @@ use super::friendly_tekton::{
 use super::{
     friendly_tekton::compose_friendly_snippets, snipmate_tekton::compose_snipmate_snippets,
 };
-use crate::snippets::multi_prefix_friendly::dynamic_prefix_combinator;
+use crate::models::multi_prefix_friendly::dynamic_prefix_combinator;
 use crate::{errors::TektonError, utils::read_lines};
 use std::fs::{self};
 

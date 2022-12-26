@@ -3,7 +3,7 @@
 use super::snipmate_tekton::build_snippets_from_file;
 use crate::{
     errors::TektonError,
-    snippets::{
+    models::{
         friendly::{FriendlySnippetBody, FriendlySnippets},
         multi_prefix_friendly::FriendlySnippet,
         snipmate::Snipmate,
@@ -49,7 +49,12 @@ pub fn convert_snipmate_to_friendlysnippets(snips: Vec<Snipmate>) -> FriendlySni
         body.reverse();
         body.insert(0, first_line.trim_start().to_string());
         // --------------------------------------------------------------
-        let description: String = re.replace_all(&snippet.description, "").to_string();
+
+        let mut description: String = String::new();
+        if let Some(descrip) = &snippet.description {
+            description = re.replace_all(descrip, "").to_string();
+        }
+
         let friendly_body = FriendlySnippetBody::new(prefix, body, description);
 
         match serde_json::to_string_pretty(&friendly_body) {
@@ -81,13 +86,9 @@ pub fn read_in_json_snippets(file_name: &str) -> Result<FriendlySnippets, Tekton
                 serde_json::from_str(&file_contents);
 
             match snippets {
-                Ok(snippets) => {
-                    return Ok(snippets);
-                }
+                Ok(snippets) => Ok(snippets),
                 Err(_) => match dynamically_read_json_snippets(file_contents) {
-                    Ok(snippets) => {
-                        return Ok(snippets);
-                    }
+                    Ok(snippets) => Ok(snippets),
                     Err(e) => Err(e),
                 },
             }
@@ -181,11 +182,7 @@ fn handle_missing_prefix(name: &str, mut snip_body: FriendlySnippetBody) -> Frie
 
 /// Function to handle the parsing of the prefix for a JSON snippet
 fn retrieve_prefix(val: &serde_json::Value) -> Option<String> {
-    if let Some(prefix) = val.as_str() {
-        Some(prefix.to_string())
-    } else {
-        None
-    }
+    val.as_str().map(|prefix| prefix.to_string())
 }
 
 /// Function to handle processing the body of a JSON snippet

@@ -10,13 +10,13 @@ pub struct Snipmate {
     pub prefix: String,
     /// The content of the snippet
     pub body: Vec<String>,
-    /// A small summary of the snippet 
-    pub description: String,
+    /// A small summary of the snippet
+    pub description: Option<String>,
 }
 
 impl Snipmate {
     /// A function to create new Snipmate snippet structs
-    pub fn new(prefix: String, body: Vec<String>, description: String) -> Snipmate {
+    pub fn new(prefix: String, body: Vec<String>, description: Option<String>) -> Snipmate {
         Snipmate {
             prefix,
             body,
@@ -39,7 +39,9 @@ impl Snipmate {
         // Note: this is done in an attempt to remove the extra quotes needed in JSON
         s = str::replace(&s, "\"", "");
 
-        s = s + " " + &self.description + "\n";
+        if let Some(description) = &self.description {
+            s = s + " " + description + "\n";
+        }
 
         s = re3.replace_all(&s, '"'.to_string()).to_string();
 
@@ -59,11 +61,14 @@ fn test_vim_snippet_creation() {
     let snip = Snipmate::new(
         String::from("test"),
         Vec::new(),
-        String::from("An epic test description"),
+        Some(String::from("An epic test description")),
     );
     assert_eq!(snip.prefix, "test".to_string());
     assert_eq!(snip.body.len(), 0);
-    assert_eq!(snip.description, "An epic test description".to_string());
+    assert_eq!(
+        snip.description,
+        Some("An epic test description".to_string())
+    );
 }
 
 #[test]
@@ -71,7 +76,7 @@ fn test_vim_snippet_display() {
     let mut snip = Snipmate::new(
         String::from("test"),
         Vec::new(),
-        String::from("An epic test description"),
+        Some(String::from("An epic test description")),
     );
     snip.body.push(String::from("A line of snippet"));
     let string_rep = snip.display();
