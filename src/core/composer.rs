@@ -13,7 +13,7 @@ use super::{
 };
 use crate::models::multi_prefix_friendly::dynamic_prefix_combinator;
 use crate::{errors::TektonError, utils::read_lines};
-use std::fs::{self};
+use std::fs;
 
 /// The main snippet composition function
 ///
@@ -40,7 +40,17 @@ pub fn composer(fname: &String, types: (&str, &str)) -> Result<String, TektonErr
     }
 }
 
-/// Last ditch effort to build the snippets for sorting
+/// The 'fall-back' mode for the SORT portion of the program.
+///
+/// An 'all-else-fails try this' method to build the snippets from the file provided. This is done by
+/// manually searching for snippet components and building them out via a helper method. The final return
+/// value is the same criteria as the `composer()`.
+/// 
+/// Arguments:
+/// - `fname` is the filename of the snippets to read from
+///
+/// Returns:
+/// - Result of String (to write to file) or a TektonError with the reason for the error
 pub fn last_composer(fname: &str) -> Result<String, TektonError> {
     match fs::read_to_string(&fname) {
         Ok(file_content) => {

@@ -153,3 +153,18 @@ fn test_building_snippets_from_file() {
     assert_eq!(snip2.body, expected.get(1).unwrap().body);
     assert_eq!(snip2.description, expected.get(1).unwrap().description);
 }
+
+#[test]
+fn test_output_string() {
+    let input: Vec<String> = vec!["snippet test".to_string(), "   test snippet".to_string()];
+
+    let snippets = build_snippets_from_file(input);
+
+    if let Ok(res) = build_snipmate_string(snippets) {
+        let spaces = "   "; // Note four spaces
+        let expexted: &str = &("snippet test\n\t".to_owned() + spaces + "test snippet\n");
+        assert_eq!(res, expexted);
+    } else {
+        assert!(false);
+    }
+}

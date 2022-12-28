@@ -55,7 +55,7 @@ pub fn convert_snipmate_to_friendlysnippets(snips: Vec<Snipmate>) -> FriendlySni
             description = re.replace_all(descrip, "").to_string();
         }
 
-        let friendly_body = FriendlySnippetBody::new(prefix, body, description);
+        let friendly_body = FriendlySnippetBody::new(prefix, body, Some(description));
 
         match serde_json::to_string_pretty(&friendly_body) {
             Ok(snip) => {
@@ -101,36 +101,48 @@ pub fn read_in_json_snippets(file_name: &str) -> Result<FriendlySnippets, Tekton
 ///
 /// The [read_in_json_snippets] function should be preferred, however the ordering of fields in JSON isn't promised
 /// and thus, this function builds the HashMap (backing the `FriendlySnippets` structure) by dynamically searching the
-/// the table for the necessary fields.
+/// the table for the necessary fields and handling the missing ones more appropriately.
 pub fn dynamically_read_json_snippets(file: String) -> Result<FriendlySnippets, TektonError> {
+    // The snippet table (what is being created/ read in)
     let mut snippets: HashMap<String, FriendlySnippetBody> = HashMap::new();
+    // The blob of JSON from serde_json
     let json: serde_json::Value = serde_json::from_str(&file).unwrap();
+    // The 'need to fix this' pile
     let mut snippets_to_fix: Vec<(String, FriendlySnippetBody)> = Vec::new();
 
     if let Some(obj) = json.as_object() {
         for (k, v) in obj {
+            // Track the name for the issue of revision (helps provide context)
             let name = k.clone();
 
-            let prefix: String = String::new(); // This will be set later in thie function
+            // This will be set later in the function
+            let prefix: String = String::new();
 
+            // Collect the lines of the snippet body (outsourced to a helper function)
             let body = retrieve_body(&v["body"]);
 
-            let mut description: String = String::new();
-            if let Some(val) = v["description"].as_str() {
-                description.push_str(val);
+            // Create snippet body assuming no description
+            let mut snip_body = FriendlySnippetBody::new(prefix, body, None);
+
+            // If we find one, then update the structure
+            if let Some(description) = v["description"].as_str() {
+                if !description.is_empty() {
+                    snip_body.description = Some(description.to_string());
+                }
             }
 
-            let mut snip_body = FriendlySnippetBody::new(prefix, body, description);
-
+            // Attempt to fetch the prefix
             let pref_candidate = retrieve_prefix(&v["prefix"]);
 
+            // If it's found, great!
+            // Otherwise, we send it to the 'need to fix this' pile.
             match pref_candidate {
                 Some(pref) => {
                     snip_body.prefix = pref;
                 }
                 None => {
                     snippets_to_fix.push((name, snip_body));
-                    continue; // skip inserting nothing
+                    continue; // skip inserting a malformed snippet into the table
                 }
             }
             snippets.insert(name.to_string(), snip_body);
@@ -162,13 +174,16 @@ pub fn dynamically_read_json_snippets(file: String) -> Result<FriendlySnippets, 
 }
 
 fn handle_missing_prefix(name: &str, mut snip_body: FriendlySnippetBody) -> FriendlySnippetBody {
-    println!("---- Snippet: {} ---\n{:#?}\n--------", name, snip_body);
+    println!(
+        "---- Snippet: {} ---\n{:#?}\n--------",
+        name,
+        serde_json::to_string_pretty(&snip_body)
+    );
     println!("Enter a prefix:");
     loop {
         let input = get_input();
         println!("Proceed? (y/n):");
         let resp = get_input().to_lowercase();
-        // println!("The response ====> {}", resp);
         if resp == "y" {
             snip_body.prefix = input;
             break;
@@ -186,6 +201,8 @@ fn retrieve_prefix(val: &serde_json::Value) -> Option<String> {
 }
 
 /// Function to handle processing the body of a JSON snippet
+///
+/// This function
 pub fn retrieve_body(val: &serde_json::Value) -> Vec<String> {
     let mut body: Vec<String> = Vec::new();
     if let Some(lines) = val.as_array() {
@@ -201,7 +218,6 @@ pub fn retrieve_body(val: &serde_json::Value) -> Vec<String> {
 
 /// Function that builds a string representing the snippets in sorted order
 pub fn sort_friendly_snippets(snippets: FriendlySnippets) -> Result<String, TektonError> {
-    //println!("{:?}", &snippets.snippets);
     let table = &snippets.snippets;
     match table.len() {
         0 => Err(TektonError::Reason(
@@ -259,108 +275,188 @@ fn build_sorted_string(
         }
     }
 }
+#[cfg(test)]
+mod tests {
 
-#[test]
-fn test_standard_json_reading() {
-    let file = r#"{
-        "beta": {
-          "prefix": "println",
-          "body": ["println!(\"${1}\");"],
-          "description": "println!(…);"
-        },
-        "alpha": {
-          "prefix": "print",
-          "body": ["print!(\"${1}\");"],
-          "description": "print!(…);"
-        }
-      }"#
-    .to_string();
+    use super::*;
 
-    let snippets: Result<FriendlySnippets, serde_json::Error> = serde_json::from_str(&file);
+    #[test]
+    fn standard_json_reading() {
+        let file = r#"{
+            "beta": {
+              "prefix": "println",
+              "body": ["println!(\"${1}\");"],
+              "description": "println!(…);"
+            },
+            "alpha": {
+              "prefix": "print",
+              "body": ["print!(\"${1}\");"],
+              "description": "print!(…);"
+            }
+          }"#
+        .to_string();
 
-    match snippets {
-        Ok(res) => {
-            let expected_struct = FriendlySnippetBody::new(
-                "println".to_string(),
-                vec!["println!(\"${1}\");".to_string()],
-                "println!(…);".to_string(),
-            );
-            assert_eq!(res.snippets.len(), 2);
-            let item = res.snippets.get("beta").unwrap();
-            assert_eq!(item.prefix, expected_struct.prefix);
-            assert_eq!(item, &expected_struct);
-        }
-        Err(e) => {
-            println!("Error: {}", e.to_string());
-            assert!(false);
-        }
-    }
-}
+        let snippets: Result<FriendlySnippets, serde_json::Error> = serde_json::from_str(&file);
 
-#[test]
-fn test_dyn_json_reading() {
-    let file = r#"{
-      "beta": {
-        "prefix": "println",
-        "body": ["println!(\"${1}\");"],
-        "description": "println!(…);"
-      },
-      "alpha": {
-        "prefix": "print",
-        "body": ["print!(\"${1}\");"],
-        "description": "print!(…);"
-      }
-    }"#
-    .to_string();
-
-    let res = dynamically_read_json_snippets(file);
-
-    match res {
-        Ok(res) => {
-            let expected_struct = FriendlySnippetBody::new(
-                "println".to_string(),
-                vec!["println!(\"${1}\");".to_string()],
-                "println!(…);".to_string(),
-            );
-            assert_eq!(res.snippets.len(), 2);
-            let item = res.snippets.get("beta").unwrap();
-            assert_eq!(item.prefix, expected_struct.prefix);
-            assert_eq!(item, &expected_struct);
-        }
-        Err(e) => {
-            println!("Error: {}", e.to_string());
-            assert!(false);
+        match snippets {
+            Ok(res) => {
+                let expected_struct = FriendlySnippetBody::new(
+                    "println".to_string(),
+                    vec!["println!(\"${1}\");".to_string()],
+                    Some("println!(…);".to_string()),
+                );
+                assert_eq!(res.snippets.len(), 2);
+                let item = res.snippets.get("beta").unwrap();
+                assert_eq!(item.prefix, expected_struct.prefix);
+                assert_eq!(item, &expected_struct);
+            }
+            Err(e) => {
+                println!("Error: {}", e.to_string());
+                assert!(false);
+            }
         }
     }
-}
 
-#[test]
-fn test_jekyll() {
-    let file = r#"{
+    #[test]
+    fn dyn_json_reading() {
+        let file = r#"{
+          "beta": {
+            "prefix": "println",
+            "body": ["println!(\"${1}\");"],
+            "description": "println!(…);"
+          },
+          "alpha": {
+            "prefix": "print",
+            "body": ["print!(\"${1}\");"],
+            "description": "print!(…);"
+          }
+        }"#
+        .to_string();
+
+        let res = dynamically_read_json_snippets(file);
+
+        match res {
+            Ok(res) => {
+                let expected_struct = FriendlySnippetBody::new(
+                    "println".to_string(),
+                    vec!["println!(\"${1}\");".to_string()],
+                    Some("println!(…);".to_string()),
+                );
+                assert_eq!(res.snippets.len(), 2);
+                let item = res.snippets.get("beta").unwrap();
+                assert_eq!(item.prefix, expected_struct.prefix);
+                assert_eq!(item, &expected_struct);
+            }
+            Err(e) => {
+                println!("Error: {}", e.to_string());
+                assert!(false);
+            }
+        }
+    }
+
+    #[test]
+    fn jekyll() {
+        let file = r#"{
+        "Filter downcase": {
+          "prefix": "downcase",
+          "description": "String filter: downcase",
+          "body": "| downcase }}"
+        }}"#
+        .to_string();
+
+        let res = dynamically_read_json_snippets(file);
+
+        match res {
+            Ok(res) => {
+                let expected_struct = FriendlySnippetBody::new(
+                    "downcase".to_string(),
+                    vec!["| downcase }}".to_string()],
+                    Some("String filter: downcase".to_string()),
+                );
+                assert_eq!(res.snippets.len(), 1);
+                let item = res.snippets.get("Filter downcase").unwrap();
+                assert_eq!(item.prefix, expected_struct.prefix);
+                assert_eq!(item, &expected_struct);
+            }
+            Err(e) => {
+                println!("Error: {}", e.to_string());
+                assert!(false);
+            }
+        }
+    }
+
+    #[test]
+    fn serialization() {
+        let file = r#"{
     "Filter downcase": {
       "prefix": "downcase",
       "description": "String filter: downcase",
       "body": "| downcase }}"
     }}"#
-    .to_string();
+        .to_string();
 
-    let res = dynamically_read_json_snippets(file);
+        let res = dynamically_read_json_snippets(file);
 
-    match res {
-        Ok(res) => {
-            let expected_struct = FriendlySnippetBody::new(
-                "downcase".to_string(),
-                vec!["| downcase }}".to_string()],
-                "String filter: downcase".to_string(),
-            );
-            assert_eq!(res.snippets.len(), 1);
-            let item = res.snippets.get("Filter downcase").unwrap();
-            assert_eq!(item.prefix, expected_struct.prefix);
-            assert_eq!(item, &expected_struct);
+        match res {
+            Ok(res) => {
+                let expected_struct = FriendlySnippetBody::new(
+                    "downcase".to_string(),
+                    vec!["| downcase }}".to_string()],
+                    Some("String filter: downcase".to_string()),
+                );
+                assert_eq!(res.snippets.len(), 1);
+                let item = res.snippets.get("Filter downcase").unwrap();
+                assert_eq!(item.prefix, expected_struct.prefix);
+                assert_eq!(item, &expected_struct);
+
+                if let Ok(s) = serde_json::to_string(&res) {
+                    const EXPECTED: &str = "{\"Filter downcase\":{\"prefix\":\"downcase\",\"body\":[\"| downcase }}\"],\"description\":\"String filter: downcase\"}}";
+                    assert_eq!(s, EXPECTED);
+                } else {
+                    assert!(false);
+                }
+            }
+            Err(e) => {
+                println!("Error: {}", e.to_string());
+                assert!(false);
+            }
         }
-        Err(e) => {
-            println!("Error: {}", e.to_string());
-            assert!(false);
+    }
+
+    #[test]
+    fn serialization_with_empty_description() {
+        let file = r#"{
+    "Filter downcase": {
+      "prefix": "downcase",
+      "body": "| downcase }}"
+    }}"#
+        .to_string();
+
+        let res = dynamically_read_json_snippets(file);
+
+        match res {
+            Ok(res) => {
+                let expected_struct = FriendlySnippetBody::new(
+                    "downcase".to_string(),
+                    vec!["| downcase }}".to_string()],
+                    None,
+                );
+                assert_eq!(res.snippets.len(), 1);
+                let item = res.snippets.get("Filter downcase").unwrap();
+                assert_eq!(item.prefix, expected_struct.prefix);
+                assert_eq!(item, &expected_struct);
+
+                if let Ok(s) = serde_json::to_string(&res) {
+                    const EXPECTED: &str = "{\"Filter downcase\":{\"prefix\":\"downcase\",\"body\":[\"| downcase }}\"]}}";
+                    assert_eq!(s, EXPECTED);
+                } else {
+                    assert!(false);
+                }
+            }
+            Err(e) => {
+                println!("Error: {}", e.to_string());
+                assert!(false);
+            }
         }
     }
 }

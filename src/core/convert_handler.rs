@@ -6,6 +6,7 @@ use crate::{
 
 use super::composer::composer;
 
+/// The conversion handler ment to control the conversion portion of the program.
 pub fn convert_handler(convert: ConversionCommand) -> Result<(), TektonError> {
     let file_extensions = (
         get_filetype_extension(&convert.input_filename).unwrap(),

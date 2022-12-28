@@ -29,7 +29,7 @@ pub fn sort_handler(sort: SortCommand) -> Result<(), TektonError> {
         file_count += 1;
         let fname: String = file.into_os_string().to_str().unwrap().to_string(); // this isn't the best thing on Earth.
         let extensions = (get_filetype_extension(&fname).unwrap(), SORT);
-        println!("[Tekton]: {}", fname);
+        // println!("[Tekton]: {}", fname);
         match composer(&fname, extensions) {
             Ok(snippets) => {
                 write_to_file(fname, snippets);
@@ -55,11 +55,8 @@ pub fn sort_handler(sort: SortCommand) -> Result<(), TektonError> {
                 }
             }
         }
-        println!("[Tekton]: Files sorted: {}", file_count);
-    } else {
-        let message = "Check the json file(s). Not writing changes.";
-        println!("\n[Tekton Error]: {}", message);
     }
+    println!("[Tekton]: Files sorted: {}", file_count);
 
     Ok(()) // We can exit with an ok since *not writing* doesn't need to end the program.
            // inform and move on.

@@ -1,10 +1,9 @@
 //! Structures to model the Snipmate snippet format
 
 use regex::Regex;
-use serde::Serialize;
 
 /// A structure representing the vim-snippet/ Snipmate format
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct Snipmate {
     /// The trigger for the snippet
     pub prefix: String,
@@ -35,27 +34,31 @@ impl Snipmate {
 
         // This creates the first line of the snippet,
         // taking the form: `snippet <prefix> <Optional: description in quotes>`
-        let mut s = "snippet ".to_string() + &self.prefix;
+        let mut snippet_string = "snippet ".to_string() + &self.prefix;
         // Note: this is done in an attempt to remove the extra quotes needed in JSON
-        s = str::replace(&s, "\"", "");
+        snippet_string = str::replace(&snippet_string, "\"", "");
 
         // Check for a description, append if its there
         if let Some(description) = &self.description {
-            s = s + " " + description;
+            if !description.is_empty() {
+                snippet_string = snippet_string + " " + description;
+            }
         }
 
-        s += "\n"; // Catch the new line after either the prefix or the end of the description
+        snippet_string += "\n"; // Catch the new line after either the prefix or the end of the description
 
-        s = re3.replace_all(&s, '"'.to_string()).to_string();
+        snippet_string = re3
+            .replace_all(&snippet_string, '"'.to_string())
+            .to_string();
 
         for item in self.body {
             let mut edited_item = re.replace_all(&item, "").to_string();
             edited_item = re2.replace_all(&edited_item, '"'.to_string()).to_string();
             edited_item = tab_regex.replace_all(&edited_item, " ").to_string();
             let line = "\t".to_string() + &edited_item + "\n";
-            s += &line;
+            snippet_string += &line;
         }
-        s
+        snippet_string
     }
 }
 
