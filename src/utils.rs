@@ -25,6 +25,11 @@ pub fn clear_terminal() {
 }
 
 /// Function to read the lines of a file and returns a Vec of Strings
+/// Arguments:
+/// - `fname` is the filename of the snippets to read from
+///
+/// Returns:
+/// - Result of vector of String or Error
 pub fn read_lines(fname: &String) -> Result<Vec<String>, Error> {
     let file = File::open(fname)?;
     let buf = BufReader::new(file);
@@ -34,16 +39,27 @@ pub fn read_lines(fname: &String) -> Result<Vec<String>, Error> {
         .collect())
 }
 /// Function to write to a newly created file.
+/// 
+/// Arguments:
+/// - `name` : file name to write the snippets to
+/// - `finished` : the final serialized string representation of the snippets
+/// 
 pub fn write_to_file(name: String, finished: String) {
     let mut outfile = File::create(Path::new("./").join(name))
         .unwrap_or_else(|err| panic!("Could not create the file {}", err));
 
     outfile
         .write_all(finished.as_bytes())
-        .unwrap_or_else(|err| panic!("Could not write the snippets {}", err));
+        .unwrap_or_else(|err| panic!("Could not write the snippets\n>>> Error >>>{}", err));
 }
 
 /// Helper function to get the file extension being passed in.
+/// 
+/// Arguments: 
+/// - `filename`: a string slice representing the name of the file 
+/// 
+/// Returns:
+/// - Optional string slice representing the file extension (e.g. `.json` or `.snippet`)
 pub fn get_filetype_extension(filename: &str) -> Option<&str> {
     Path::new(filename).extension().and_then(OsStr::to_str)
 }
