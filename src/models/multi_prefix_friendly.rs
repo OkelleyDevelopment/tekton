@@ -10,12 +10,12 @@ use crate::{core::friendly_tekton::retrieve_body, errors::TektonError};
 
 /// The Struct representing the JSON file of snippets
 #[derive(Debug, Serialize, Deserialize)]
-pub struct FriendlySnippet {
+pub struct MultiPrefixTable {
     #[serde(flatten)]
     pub snippets: HashMap<String, MultiBody>,
 }
 
-/// A struct representing the body of a snippet from the `FriendlySnippets` hashmap
+/// A struct representing the body of a snippet from the `MultiPrefixTable` hashmap
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct MultiBody {
     pub prefix: Vec<String>,
@@ -35,7 +35,7 @@ impl MultiBody {
 }
 
 /// Essential the samething for the default
-pub fn dynamic_prefix_combinator(file_content: &str) -> Result<FriendlySnippet, TektonError> {
+pub fn dynamic_prefix_combinator(file_content: &str) -> Result<MultiPrefixTable, TektonError> {
     let mut snippets: HashMap<String, MultiBody> = HashMap::new();
     // println!("{}", file);
     let json: serde_json::Value = serde_json::from_str(file_content).unwrap();
@@ -64,7 +64,7 @@ pub fn dynamic_prefix_combinator(file_content: &str) -> Result<FriendlySnippet, 
         }
     }
 
-    Ok(FriendlySnippet { snippets })
+    Ok(MultiPrefixTable { snippets })
 }
 
 fn retrieve_prefix(val: &serde_json::Value) -> Result<Vec<String>, TektonError> {

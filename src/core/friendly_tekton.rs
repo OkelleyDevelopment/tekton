@@ -5,7 +5,7 @@ use crate::{
     errors::TektonError,
     models::{
         friendly::{FriendlySnippetBody, FriendlySnippets},
-        multi_prefix_friendly::FriendlySnippet,
+        multi_prefix_friendly::MultiPrefixTable,
         snipmate::Snipmate,
     },
     utils::{clear_terminal, get_input},
@@ -228,7 +228,7 @@ pub fn sort_friendly_snippets(snippets: FriendlySnippets) -> Result<String, Tekt
 }
 
 /// Function that builds a string representing the snippets in sorted order
-pub fn order_friendly_snippets(snippets: FriendlySnippet) -> Result<String, TektonError> {
+pub fn order_friendly_snippets(snippets: MultiPrefixTable) -> Result<String, TektonError> {
     //println!("{:?}", &snippets.snippets);
     let table = &snippets.snippets;
     match table.len() {

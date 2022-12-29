@@ -39,11 +39,11 @@ pub fn read_lines(fname: &String) -> Result<Vec<String>, Error> {
         .collect())
 }
 /// Function to write to a newly created file.
-/// 
+///
 /// Arguments:
 /// - `name` : file name to write the snippets to
 /// - `finished` : the final serialized string representation of the snippets
-/// 
+///
 pub fn write_to_file(name: String, finished: String) {
     let mut outfile = File::create(Path::new("./").join(name))
         .unwrap_or_else(|err| panic!("Could not create the file {}", err));
@@ -54,10 +54,10 @@ pub fn write_to_file(name: String, finished: String) {
 }
 
 /// Helper function to get the file extension being passed in.
-/// 
-/// Arguments: 
-/// - `filename`: a string slice representing the name of the file 
-/// 
+///
+/// Arguments:
+/// - `filename`: a string slice representing the name of the file
+///
 /// Returns:
 /// - Optional string slice representing the file extension (e.g. `.json` or `.snippet`)
 pub fn get_filetype_extension(filename: &str) -> Option<&str> {

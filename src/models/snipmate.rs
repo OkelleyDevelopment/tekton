@@ -51,11 +51,14 @@ impl Snipmate {
             .replace_all(&snippet_string, '"'.to_string())
             .to_string();
 
-        for item in self.body {
-            let mut edited_item = re.replace_all(&item, "").to_string();
-            edited_item = re2.replace_all(&edited_item, '"'.to_string()).to_string();
-            edited_item = tab_regex.replace_all(&edited_item, " ").to_string();
-            let line = "\t".to_string() + &edited_item + "\n";
+        // Loops over the lines of the body to replace any extra quotations
+        for line in self.body {
+            let mut edited_line_item = re.replace_all(&line, "").to_string();
+            edited_line_item = re2
+                .replace_all(&edited_line_item, '"'.to_string())
+                .to_string();
+            edited_line_item = tab_regex.replace_all(&edited_line_item, " ").to_string();
+            let line = "\t".to_string() + &edited_line_item + "\n";
             snippet_string += &line;
         }
         snippet_string

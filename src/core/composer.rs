@@ -45,7 +45,7 @@ pub fn composer(fname: &String, types: (&str, &str)) -> Result<String, TektonErr
 /// An 'all-else-fails try this' method to build the snippets from the file provided. This is done by
 /// manually searching for snippet components and building them out via a helper method. The final return
 /// value is the same criteria as the `composer()`.
-/// 
+///
 /// Arguments:
 /// - `fname` is the filename of the snippets to read from
 ///
