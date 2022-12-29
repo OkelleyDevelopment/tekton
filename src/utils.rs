@@ -4,10 +4,15 @@ use core::panic;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{self, prelude::*, BufReader, Error};
-use std::path::Path;
+use std::path::{Path, PathBuf};
+
+use walkdir::WalkDir;
 
 /// Function to retrive user input, looping until text is in the buffer
 /// and is not an empty line
+/// 
+/// Returns:
+/// - The user input as a String
 pub fn get_input() -> String {
     let mut input = String::new();
     while input == String::new() {
@@ -41,16 +46,39 @@ pub fn read_lines(fname: &String) -> Result<Vec<String>, Error> {
 /// Function to write to a newly created file.
 ///
 /// Arguments:
-/// - `name` : file name to write the snippets to
+/// - `output_name` : file name to write the snippets to
 /// - `finished` : the final serialized string representation of the snippets
 ///
-pub fn write_to_file(name: String, finished: String) {
-    let mut outfile = File::create(Path::new("./").join(name))
+pub fn write_to_file(output_name: String, finished: String) {
+    let mut outfile = File::create(Path::new("./").join(output_name))
         .unwrap_or_else(|err| panic!("Could not create the file {}", err));
 
     outfile
         .write_all(finished.as_bytes())
         .unwrap_or_else(|err| panic!("Could not write the snippets\n>>> Error >>>{}", err));
+}
+
+/// Function to create a vector of PathBuf's that will be consumed
+/// by the program during runtime.
+///
+/// Arguments:
+/// - `path`: the path to the directory or file to read
+/// - `crawl`: an optional boolean to indicate if the `path` is a directory crawl through.
+///
+/// Returns:
+/// - A list of Pathbuf's representing files the program may read
+pub fn crawl_files(path: String, crawl: Option<String>) -> Vec<PathBuf> {
+    let mut files: Vec<PathBuf> = Vec::new();
+    if crawl.is_some() {
+        for file in WalkDir::new(path).into_iter().filter_map(|file| file.ok()) {
+            if file.metadata().unwrap().is_file() {
+                files.push(file.path().to_path_buf());
+            }
+        }
+    } else {
+        files.push(PathBuf::from(path));
+    }
+    files
 }
 
 /// Helper function to get the file extension being passed in.

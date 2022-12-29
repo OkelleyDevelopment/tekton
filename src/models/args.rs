@@ -31,4 +31,6 @@ pub struct SortCommand {
     pub path: String,
     /// If present, then the path should be to a directory
     pub crawl: Option<String>,
+    /// If present, then the program will prompt for user input.
+    pub interactive: Option<String>,
 }

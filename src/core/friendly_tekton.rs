@@ -5,7 +5,7 @@ use crate::{
     errors::TektonError,
     models::{
         friendly::{FriendlySnippetBody, FriendlySnippets},
-        multi_prefix_friendly::MultiPrefixTable,
+        multiprefix_friendly::MultiPrefixTable,
         snipmate::Snipmate,
     },
     utils::{clear_terminal, get_input},

@@ -1,38 +1,11 @@
-//!
-//! TODO: Ideally this file will be removed if we can make the hashmap
-//! generic.
-//!
-
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::{core::friendly_tekton::retrieve_body, errors::TektonError};
+use crate::{
+    errors::TektonError,
+    models::multiprefix_friendly::{MultiBody, MultiPrefixTable},
+};
 
-/// The Struct representing the JSON file of snippets
-#[derive(Debug, Serialize, Deserialize)]
-pub struct MultiPrefixTable {
-    #[serde(flatten)]
-    pub snippets: HashMap<String, MultiBody>,
-}
-
-/// A struct representing the body of a snippet from the `MultiPrefixTable` hashmap
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
-pub struct MultiBody {
-    pub prefix: Vec<String>,
-    pub body: Vec<String>,
-    pub description: Option<String>,
-}
-
-impl MultiBody {
-    /// A constructor function for the Snippet body
-    pub fn new(prefix: Vec<String>, body: Vec<String>, description: String) -> Self {
-        Self {
-            prefix,
-            body,
-            description: Some(description),
-        }
-    }
-}
+use super::friendly_tekton::retrieve_body;
 
 /// Essential the samething for the default
 pub fn dynamic_prefix_combinator(file_content: &str) -> Result<MultiPrefixTable, TektonError> {

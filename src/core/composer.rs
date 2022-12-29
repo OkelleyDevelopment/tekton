@@ -8,10 +8,10 @@
 use super::friendly_tekton::{
     order_friendly_snippets, read_in_json_snippets, sort_friendly_snippets,
 };
+use super::multiprefix_tekton::dynamic_prefix_combinator;
 use super::{
     friendly_tekton::compose_friendly_snippets, snipmate_tekton::compose_snipmate_snippets,
 };
-use crate::models::multi_prefix_friendly::dynamic_prefix_combinator;
 use crate::{errors::TektonError, utils::read_lines};
 use std::fs;
 
@@ -51,7 +51,7 @@ pub fn composer(fname: &String, types: (&str, &str)) -> Result<String, TektonErr
 ///
 /// Returns:
 /// - Result of String (to write to file) or a TektonError with the reason for the error
-pub fn last_composer(fname: &str) -> Result<String, TektonError> {
+pub fn multiprefix_composer(fname: &str) -> Result<String, TektonError> {
     match fs::read_to_string(&fname) {
         Ok(file_content) => {
             let snippets = dynamic_prefix_combinator(&file_content)?;
