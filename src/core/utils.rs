@@ -10,7 +10,7 @@ use walkdir::WalkDir;
 
 /// Function to retrive user input, looping until text is in the buffer
 /// and is not an empty line
-/// 
+///
 /// Returns:
 /// - The user input as a String
 pub fn get_input() -> String {
