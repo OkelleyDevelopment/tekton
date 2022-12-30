@@ -1,10 +1,8 @@
 use crate::{
-    core::{
-        composer::{composer, multiprefix_composer},
-        utils::{crawl_files, get_filetype_extension, write_to_file},
-    },
+    core::composer::{composer, multiprefix_composer},
     errors::TektonError,
     models::args::SortCommand,
+    utils::{crawl_files, get_filetype, write_to_file},
 };
 
 // A named constant for the sort option
@@ -27,7 +25,7 @@ pub fn sort_handler(sort: SortCommand) -> Result<(), TektonError> {
         .map(|file| {
             file_count += 1;
             let fname: String = file.clone().into_os_string().to_str().unwrap().to_string(); // this isn't the best thing on Earth.
-            let extensions = (get_filetype_extension(&fname).unwrap(), SORT);
+            let extensions = (get_filetype(&fname).unwrap(), SORT);
             match composer(&fname, extensions, mode) {
                 Ok(snippets) => {
                     write_to_file(fname, snippets);

@@ -2,22 +2,15 @@
 
 use super::snipmate_tekton::build_snippets_from_file;
 use crate::{
-    core::utils::{clear_terminal, get_input},
     errors::TektonError,
     models::{
-        friendly::{FriendlySnippetBody, FriendlySnippets},
+        friendly::{FriendlySnippetBody, FriendlySnippets, Table},
         snipmate::Snipmate,
     },
+    utils::{clear_terminal, get_input, hash2ordered_string},
 };
 use regex::Regex;
-use serde::{Deserialize, Serialize};
-use std::{
-    collections::{BTreeMap, HashMap},
-    fs,
-};
-
-/// A custom type to shorten function signatures
-pub type Table = HashMap<String, FriendlySnippetBody>;
+use std::{collections::HashMap, fs};
 
 /// A helper function to handle Snipmate to JSON
 pub fn compose_friendly_snippets(lines: Vec<String>) -> Result<String, TektonError> {
@@ -47,9 +40,11 @@ pub fn convert_snipmate_to_friendlysnippets(snips: Vec<Snipmate>) -> FriendlySni
         let mut body: Vec<String> = snippet.body;
         // --------------------------------------------------------------
         // NOTE: Remove the whitespace for the very first line of the snippet
-        body.reverse();
-        let first_line: String = body.pop().unwrap().to_string();
-        body.reverse();
+        // body.reverse();
+        // let first_line: String = body.pop().unwrap().to_string();
+        // body.reverse();
+        // body.insert(0, first_line.trim_start().to_string());
+        let first_line = body.get(0).unwrap().to_string();
         body.insert(0, first_line.trim_start().to_string());
         // --------------------------------------------------------------
 
@@ -84,22 +79,16 @@ pub fn read_in_json_snippets(
     file_name: &str,
     interactive: bool,
 ) -> Result<FriendlySnippets, TektonError> {
-    let file_contents = fs::read_to_string(&file_name);
+    let file_contents = fs::read_to_string(&file_name)?;
 
-    match file_contents {
-        Ok(file_contents) => {
-            let snippets: Result<FriendlySnippets, serde_json::Error> =
-                serde_json::from_str(&file_contents);
-
-            match snippets {
-                Ok(snippets) => Ok(snippets),
-                Err(_) => match dynamically_read_json_snippets(file_contents, interactive) {
-                    Ok(snippets) => Ok(snippets),
-                    Err(e) => Err(e),
-                },
-            }
-        }
-        Err(e) => Err(TektonError::Reason(e.to_string())),
+    let snippets: Result<FriendlySnippets, serde_json::Error> =
+        serde_json::from_str(&file_contents);
+    match snippets {
+        Ok(snippets) => Ok(snippets),
+        Err(_) => match dynamically_read_json_snippets(file_contents, interactive) {
+            Ok(snippets) => Ok(snippets),
+            Err(e) => Err(e),
+        },
     }
 }
 
@@ -261,7 +250,7 @@ pub fn retrieve_body(val: &serde_json::Value) -> Vec<String> {
 }
 
 /// Function that builds a string representing the snippets in sorted order
-/// 
+///
 pub fn sort_friendly_snippets(snippets: FriendlySnippets) -> Result<String, TektonError> {
     let table = &snippets.snippets;
     match table.len() {
@@ -269,46 +258,6 @@ pub fn sort_friendly_snippets(snippets: FriendlySnippets) -> Result<String, Tekt
             "Refusing to build string for 0 snippets".to_string(),
         )),
         _ => hash2ordered_string(table),
-    }
-}
-
-/// A generalized function to convert a JSON blob to a alphabetized JSON string.
-/// 
-/// Arguments:
-/// - `table`: HashMap with the keys as Strings and the values (T) as a type that are De/Serialize-able
-/// 
-/// Returns:
-/// - Result of either the finished JSON string or an Error
-pub fn hash2ordered_string<T>(table: &HashMap<String, T>) -> Result<String, TektonError>
-where
-    T: Serialize + for<'a> Deserialize<'a>,
-{
-    match table.len() {
-        0 => Err(TektonError::Reason(
-            "Refusing to build string for 0 snippets".to_string(),
-        )),
-        _ => {
-            // 1. Get the keys
-            let mut keys: Vec<String> = table.iter().map(|(k, _)| k.to_string()).collect();
-
-            // 2. Sort alphabetically (all lowercase)
-            keys.sort_by_key(|a| a.to_lowercase());
-
-            // 3. Iterate over the HashMap based on the ordered keys and collect into the BTreeMap
-            let ordered: BTreeMap<String, _> = keys
-                .iter()
-                .map(|key| {
-                    let snippet = table.get(key).unwrap();
-                    (key.clone(), snippet)
-                })
-                .collect();
-
-            // 4. Return the result as a JSON string
-            match serde_json::to_string_pretty(&ordered) {
-                Ok(snippets) => Ok(snippets),
-                Err(e) => Err(TektonError::Reason(e.to_string())),
-            }
-        }
     }
 }
 

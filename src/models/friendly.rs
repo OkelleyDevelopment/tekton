@@ -3,12 +3,15 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+/// A custom type to shorten function signatures
+pub type Table = HashMap<String, FriendlySnippetBody>;
+
 /// The Struct representing the JSON file of snippets
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FriendlySnippets {
     /// The hashmap (table) that represents the source snippet file
     #[serde(flatten)]
-    pub snippets: HashMap<String, FriendlySnippetBody>,
+    pub snippets: Table,
 }
 
 /// A struct representing the body of a snippet from the `FriendlySnippets` hashmap

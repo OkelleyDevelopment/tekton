@@ -7,11 +7,11 @@
 
 use super::friendly_tekton::{read_in_json_snippets, sort_friendly_snippets};
 use super::multiprefix_tekton::{dynamic_prefix_combinator, order_friendly_snippets};
-use super::utils::read_lines;
 use super::{
     friendly_tekton::compose_friendly_snippets, snipmate_tekton::compose_snipmate_snippets,
 };
 use crate::errors::TektonError;
+use crate::utils::read_lines;
 use std::fs;
 
 /// The main snippet composition function
