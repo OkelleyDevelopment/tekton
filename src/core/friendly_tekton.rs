@@ -27,33 +27,26 @@ pub fn build_friendly_string(friendlies: FriendlySnippets) -> Result<String, Tek
 
 /// A function to convert an array of Snipmate structs to an array of FriendlySnippet structs
 pub fn convert_snipmate_to_friendlysnippets(snips: Vec<Snipmate>) -> FriendlySnippets {
-    let mut friendly_handle: FriendlySnippets = FriendlySnippets {
-        snippets: HashMap::new(),
-    };
-
-    let re = Regex::new(r##"\\""##).unwrap();
-
     let mut count: usize = 0;
     let target = snips.len();
+    let re = Regex::new(r##"\\""##).unwrap();
+    let mut friendly_handle: FriendlySnippets = FriendlySnippets::new();
+
     for snippet in snips {
         let prefix: String = snippet.prefix;
         let mut body: Vec<String> = snippet.body;
-        // --------------------------------------------------------------
-        // NOTE: Remove the whitespace for the very first line of the snippet
-        // body.reverse();
-        // let first_line: String = body.pop().unwrap().to_string();
-        // body.reverse();
-        // body.insert(0, first_line.trim_start().to_string());
-        let first_line = body.get(0).unwrap().to_string();
-        body.insert(0, first_line.trim_start().to_string());
-        // --------------------------------------------------------------
-
         let mut description: String = String::new();
+
+        // NOTE: Remove the whitespace for the very first line of the snippet
+        if let Some(first_line) = body.get(0) {
+            body.insert(0, first_line.trim_start().to_string());
+        }
+
         if let Some(descrip) = &snippet.description {
             description = re.replace_all(descrip, "").to_string();
         }
 
-        let friendly_body = FriendlySnippetBody::new(prefix, body, Some(description));
+        let friendly_body = FriendlySnippetBody::new(Some(prefix), body, Some(description));
 
         match serde_json::to_string_pretty(&friendly_body) {
             Ok(snip) => {
@@ -109,18 +102,12 @@ pub fn dynamically_read_json_snippets(
     let mut snippets_to_fix: Vec<(String, FriendlySnippetBody)> = Vec::new();
 
     if let Some(obj) = json.as_object() {
-        for (k, v) in obj {
-            // Track the name for the issue of revision (helps provide context)
-            let name = k.clone();
-
-            // This will be set later in the function
-            let prefix: String = String::new();
-
+        for (name, v) in obj {
             // Collect the lines of the snippet body (outsourced to a helper function)
             let body = retrieve_body(&v["body"]);
 
             // Create snippet body assuming no description
-            let mut snip_body = FriendlySnippetBody::new(prefix, body, None);
+            let mut snip_body = FriendlySnippetBody::new(None, body, None);
 
             // If we find one, then update the structure
             if let Some(description) = v["description"].as_str() {
@@ -129,26 +116,22 @@ pub fn dynamically_read_json_snippets(
                 }
             }
 
-            // Attempt to fetch the prefix
-            let pref_candidate = retrieve_prefix(&v["prefix"]);
-
-            // If it's found, great!
-            // Otherwise, we send it to the 'need to fix this' pile.
-            match pref_candidate {
-                Some(pref) => {
-                    snip_body.prefix = pref;
-                }
-                None => {
-                    if interactive {
-                        snippets_to_fix.push((name, snip_body));
-                        continue; // skip inserting a malformed snippet into the table
-                    } else {
-                        return Err(TektonError::Reason(
-                            "File contains snippets with missing prefix field(s). Aborting.".into(),
-                        ));
-                    }
-                }
+            // Find the prefix or add to the 'fix later' vec
+            if let Some(pref_candidate) = retrieve_prefix(&v["prefix"]) {
+                snip_body.prefix = Some(pref_candidate);
+            } else if interactive {
+                // skip inserting a malformed snippet into the table, will fix later
+                snippets_to_fix.push((name.to_string(), snip_body));
+                continue;
+            } else {
+                // Return an error, this is useful for automation since errors can be collected
+                // and addressed after the batch is finished.
+                return Err(TektonError::Reason(
+                    "File contains snippets with missing prefix field(s). Aborting.".into(),
+                ));
             }
+
+            // Insert the finished snippet into the table
             snippets.insert(name.to_string(), snip_body);
         }
         correct_missing_prefix_snippets(&mut snippets_to_fix, &mut snippets);
@@ -207,7 +190,7 @@ fn handle_prompt_for_prefix(name: &str, mut snip_body: FriendlySnippetBody) -> F
         let resp = get_input().to_lowercase();
 
         if resp == "y" {
-            snip_body.prefix = prefix_candidate;
+            snip_body.prefix = Some(prefix_candidate);
             break;
         }
 
@@ -288,7 +271,7 @@ mod tests {
         match snippets {
             Ok(res) => {
                 let expected_struct = FriendlySnippetBody::new(
-                    "println".to_string(),
+                    Some("println".to_string()),
                     vec!["println!(\"${1}\");".to_string()],
                     Some("println!(…);".to_string()),
                 );
@@ -325,7 +308,7 @@ mod tests {
         match res {
             Ok(res) => {
                 let expected_struct = FriendlySnippetBody::new(
-                    "println".to_string(),
+                    Some("println".to_string()),
                     vec!["println!(\"${1}\");".to_string()],
                     Some("println!(…);".to_string()),
                 );
@@ -356,7 +339,7 @@ mod tests {
         match res {
             Ok(res) => {
                 let expected_struct = FriendlySnippetBody::new(
-                    "downcase".to_string(),
+                    Some("downcase".to_string()),
                     vec!["| downcase }}".to_string()],
                     Some("String filter: downcase".to_string()),
                 );
@@ -387,7 +370,7 @@ mod tests {
         match res {
             Ok(res) => {
                 let expected_struct = FriendlySnippetBody::new(
-                    "downcase".to_string(),
+                    Some("downcase".to_string()),
                     vec!["| downcase }}".to_string()],
                     Some("String filter: downcase".to_string()),
                 );
@@ -424,7 +407,7 @@ mod tests {
         match res {
             Ok(res) => {
                 let expected_struct = FriendlySnippetBody::new(
-                    "downcase".to_string(),
+                    Some("downcase".to_string()),
                     vec!["| downcase }}".to_string()],
                     None,
                 );
