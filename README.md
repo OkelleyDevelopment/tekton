@@ -45,8 +45,6 @@ Note: If anything appears after the `<INPUT_FILENAME>` the program assumes the u
 ## Acknowledgements
 
 - My impatience for doing this by hand 
-- A desire to automate everything
-
 
 ## Demo
 
