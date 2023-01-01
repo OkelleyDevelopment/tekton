@@ -1,16 +1,14 @@
-use std::collections::HashMap;
-
 use crate::{
     errors::TektonError,
     models::multiprefix_friendly::{MultiBody, MultiPrefixTable},
 };
+use std::collections::HashMap;
 
 use super::friendly_tekton::retrieve_body;
 
 /// Essential the samething for the default
 pub fn dynamic_prefix_combinator(file_content: &str) -> Result<MultiPrefixTable, TektonError> {
     let mut snippets: HashMap<String, MultiBody> = HashMap::new();
-    // println!("{}", file);
     let json: serde_json::Value = serde_json::from_str(file_content).unwrap();
 
     if let Some(obj) = json.as_object() {
@@ -55,9 +53,13 @@ fn retrieve_prefix(val: &serde_json::Value) -> Result<Vec<String>, TektonError> 
     }
 }
 
-#[test]
-fn test_multiple_prefix_entries() {
-    let file = r#"{
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_multiple_prefix_entries() {
+        let file = r#"{
         "Unreal GetLifeTimeReplicates": {
             "prefix": ["ugetlifetimereplicatedprops", "usetupreplicatedproperties"],
             "body": [
@@ -73,11 +75,11 @@ fn test_multiple_prefix_entries() {
     }"#
     .to_string();
 
-    let res = dynamic_prefix_combinator(&file);
+        let res = dynamic_prefix_combinator(&file);
 
-    match res {
-        Ok(res) => {
-            let expected_struct = MultiBody::new(
+        match res {
+            Ok(res) => {
+                let expected_struct = MultiBody::new(
                 vec!["ugetlifetimereplicatedprops".to_string(), "usetupreplicatedproperties".to_string()],
                 vec![
                     "void ${1:ClassName}::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const",
@@ -89,21 +91,21 @@ fn test_multiple_prefix_entries() {
                   ].iter().map(|e| e.to_string()).collect(),
                   "Creates the Function in which you setup replicated properties".to_string(),
             );
-            assert_eq!(res.snippets.len(), 1);
-            let item = res.snippets.get("Unreal GetLifeTimeReplicates").unwrap();
-            assert_eq!(item.prefix, expected_struct.prefix);
-            assert_eq!(item, &expected_struct);
-        }
-        Err(e) => {
-            println!("Error: {}", e.to_string());
-            assert!(false);
+                assert_eq!(res.snippets.len(), 1);
+                let item = res.snippets.get("Unreal GetLifeTimeReplicates").unwrap();
+                assert_eq!(item.prefix, expected_struct.prefix);
+                assert_eq!(item, &expected_struct);
+            }
+            Err(e) => {
+                println!("Error: {}", e.to_string());
+                assert!(false);
+            }
         }
     }
-}
 
-#[test]
-fn test_single_prefix_entries_in_array() {
-    let file = r#"{
+    #[test]
+    fn test_single_prefix_entries_in_array() {
+        let file = r#"{
         "Unreal GetLifeTimeReplicates": {
             "prefix": "ugetlifetimereplicatedprops",
             "body": [
@@ -119,11 +121,11 @@ fn test_single_prefix_entries_in_array() {
     }"#
     .to_string();
 
-    let res = dynamic_prefix_combinator(&file);
+        let res = dynamic_prefix_combinator(&file);
 
-    match res {
-        Ok(res) => {
-            let expected_struct = MultiBody::new(
+        match res {
+            Ok(res) => {
+                let expected_struct = MultiBody::new(
                 vec!["ugetlifetimereplicatedprops".to_string()],
                 vec![
                     "void ${1:ClassName}::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const",
@@ -135,14 +137,15 @@ fn test_single_prefix_entries_in_array() {
                   ].iter().map(|e| e.to_string()).collect(),
                   "Creates the Function in which you setup replicated properties".to_string(),
             );
-            assert_eq!(res.snippets.len(), 1);
-            let item = res.snippets.get("Unreal GetLifeTimeReplicates").unwrap();
-            assert_eq!(item.prefix, expected_struct.prefix);
-            assert_eq!(item, &expected_struct);
-        }
-        Err(e) => {
-            println!("Error: {}", e.to_string());
-            assert!(false);
+                assert_eq!(res.snippets.len(), 1);
+                let item = res.snippets.get("Unreal GetLifeTimeReplicates").unwrap();
+                assert_eq!(item.prefix, expected_struct.prefix);
+                assert_eq!(item, &expected_struct);
+            }
+            Err(e) => {
+                println!("Error: {}", e.to_string());
+                assert!(false);
+            }
         }
     }
 }

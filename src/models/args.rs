@@ -23,11 +23,13 @@ pub struct ConversionCommand {
     pub input_filename: String,
     /// The output filename
     pub output_filename: String,
+    /// If present, the program may prompt for intput
+    pub interactive: Option<String>,
 }
 
 #[derive(Debug, Args)]
 pub struct SortCommand {
-    /// Path to the snippets
+    /// Path to the snippets file or directory to crawl
     pub path: String,
     /// If present, then the path should be to a directory
     pub crawl: Option<String>,

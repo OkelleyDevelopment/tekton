@@ -34,19 +34,21 @@ pub fn create_snipmate_structs_from_json(
     let target = table.len();
     let mut count: usize = 0;
     let mut snipmate_snippets: Vec<Snipmate> = Vec::new();
-    for (_k, v) in table {
+    for (_name, v) in table {
         let description = match v.description {
             Some(description) => description,
             None => "".to_string(),
         };
 
-        let snip: Snipmate = Snipmate {
-            prefix: v.prefix,
-            body: v.body,
-            description: Some(description),
-        };
-        count += 1;
-        snipmate_snippets.push(snip)
+        if let Some(prefix) = v.prefix {
+            let snip: Snipmate = Snipmate {
+                prefix,
+                body: v.body,
+                description: Some(description),
+            };
+            count += 1;
+            snipmate_snippets.push(snip)
+        }
     }
 
     println!("Count: {} || Target: {}", count, target);

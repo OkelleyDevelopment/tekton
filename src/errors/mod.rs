@@ -1,5 +1,6 @@
 //! Various Error enums for the tekton program
 use core::fmt;
+use std::io;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum TektonError {
@@ -16,6 +17,18 @@ impl fmt::Display for TektonError {
             TektonError::SwitchModes(b) => b.to_string(),
         };
         write!(f, "{}", string)
+    }
+}
+
+impl std::error::Error for TektonError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+impl std::convert::From<io::Error> for TektonError {
+    fn from(io_err: io::Error) -> Self {
+        TektonError::Reason(io_err.to_string())
     }
 }
 

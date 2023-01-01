@@ -1,7 +1,7 @@
 extern crate walkdir;
 use clap::Parser;
-use tekton::core::convert_handler::convert_handler;
-use tekton::core::sort_handler::sort_handler;
+use tekton::core::handlers::convert_handler::convert_handler;
+use tekton::core::handlers::sort_handler::sort_handler;
 use tekton::errors::TektonError;
 use tekton::models::args::{TektonArgs, TektonEntity};
 

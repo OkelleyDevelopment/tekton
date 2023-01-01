@@ -3,19 +3,36 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+/// A custom type to shorten function signatures
+pub type Table = HashMap<String, FriendlySnippetBody>;
+
 /// The Struct representing the JSON file of snippets
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FriendlySnippets {
     /// The hashmap (table) that represents the source snippet file
     #[serde(flatten)]
-    pub snippets: HashMap<String, FriendlySnippetBody>,
+    pub snippets: Table,
+}
+
+impl FriendlySnippets {
+    pub fn new() -> Self {
+        Self {
+            snippets: HashMap::new(),
+        }
+    }
+}
+
+impl Default for FriendlySnippets {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 /// A struct representing the body of a snippet from the `FriendlySnippets` hashmap
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct FriendlySnippetBody {
     /// The trigger for the snippet
-    pub prefix: String,
+    pub prefix: Option<String>,
     /// The 'snippet' contents
     pub body: Vec<String>,
     /// An optional description explaining the snippet
@@ -24,9 +41,8 @@ pub struct FriendlySnippetBody {
 }
 
 impl FriendlySnippetBody {
-    /// A constructor function for the Snippet body
     pub fn new(
-        prefix: String,
+        prefix: Option<String>,
         body: Vec<String>,
         description: Option<String>,
     ) -> FriendlySnippetBody {
@@ -41,11 +57,11 @@ impl FriendlySnippetBody {
 #[test]
 fn test_snippet_body_creation() {
     let body = FriendlySnippetBody::new(
-        "snip".to_string(),
+        Some("snip".to_string()),
         Vec::new(),
         Some("Description".to_string()),
     );
-    assert_eq!(body.prefix, "snip".to_string());
+    assert_eq!(body.prefix, Some("snip".to_string()));
     assert_eq!(body.body.len(), 0);
 }
 
@@ -55,12 +71,12 @@ fn test_friendly_snippets() {
         snippets: HashMap::new(),
     };
     let body = FriendlySnippetBody::new(
-        "snip".to_string(),
+        Some("snip".to_string()),
         Vec::new(),
         Some("Description".to_string()),
     );
     let expected_body = FriendlySnippetBody::new(
-        "snip".to_string(),
+        Some("snip".to_string()),
         Vec::new(),
         Some("Description".to_string()),
     );
@@ -76,8 +92,8 @@ fn friendly_description_is_none() {
     let mut hp: FriendlySnippets = FriendlySnippets {
         snippets: HashMap::new(),
     };
-    let body = FriendlySnippetBody::new("snip".to_string(), Vec::new(), None);
-    let expected_body = FriendlySnippetBody::new("snip".to_string(), Vec::new(), None);
+    let body = FriendlySnippetBody::new(Some("snip".to_string()), Vec::new(), None);
+    let expected_body = FriendlySnippetBody::new(Some("snip".to_string()), Vec::new(), None);
     hp.snippets.insert("test".to_string(), body);
     assert_eq!(
         hp.snippets.get(&"test".to_string()).unwrap(),
