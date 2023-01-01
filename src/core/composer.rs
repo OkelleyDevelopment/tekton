@@ -5,14 +5,15 @@
 //! simple.
 //!
 
-use super::friendly_tekton::{read_in_json_snippets, sort_friendly_snippets};
-use super::multiprefix_tekton::{dynamic_prefix_combinator, order_friendly_snippets};
-use super::{
-    friendly_tekton::compose_friendly_snippets, snipmate_tekton::compose_snipmate_snippets,
-};
 use crate::errors::TektonError;
-use crate::utils::read_lines;
+use crate::utils::{hash2ordered_string, read_lines};
 use std::fs;
+
+use super::tektons::friendly_tekton::{
+    compose_friendly_snippets, read_in_json_snippets, sort_friendly_snippets,
+};
+use super::tektons::multiprefix_tekton::dynamic_prefix_combinator;
+use super::tektons::snipmate_tekton::compose_snipmate_snippets;
 
 /// The main snippet composition function
 ///
@@ -60,7 +61,8 @@ pub fn multiprefix_composer(fname: &str) -> Result<String, TektonError> {
     match fs::read_to_string(&fname) {
         Ok(file_content) => {
             let snippets = dynamic_prefix_combinator(&file_content)?;
-            order_friendly_snippets(snippets)
+            // order_friendly_snippets(snippets)
+            hash2ordered_string(&snippets.snippets)
         }
         Err(e) => Err(TektonError::Reason(e.to_string())),
     }

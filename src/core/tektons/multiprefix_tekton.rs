@@ -2,7 +2,7 @@ use crate::{
     errors::TektonError,
     models::multiprefix_friendly::{MultiBody, MultiPrefixTable},
 };
-use std::collections::{BTreeMap, HashMap};
+use std::collections::HashMap;
 
 use super::friendly_tekton::retrieve_body;
 
@@ -50,43 +50,6 @@ fn retrieve_prefix(val: &serde_json::Value) -> Result<Vec<String>, TektonError> 
         Err(TektonError::Reason(
             "Check source file, not possible to construct snippet.".to_string(),
         ))
-    }
-}
-
-/// Function that builds a string representing the snippets in sorted order, the main point of this tool
-pub fn order_friendly_snippets(snippets: MultiPrefixTable) -> Result<String, TektonError> {
-    let table = &snippets.snippets;
-    match table.len() {
-        0 => Err(TektonError::Reason(
-            "Refusing to build string for 0 snippets".to_string(),
-        )),
-        _ => {
-            match table.len() {
-                0 => Err(TektonError::Reason(
-                    "Refusing to build string for 0 snippets".to_string(),
-                )),
-                _ => {
-                    let mut keys: Vec<String> = table.iter().map(|(k, _)| k.to_string()).collect();
-
-                    keys.sort_by_key(|a| a.to_lowercase());
-
-                    // 2. This provides an ordering
-                    let ordered: BTreeMap<String, _> = keys
-                        .iter()
-                        .map(|key| {
-                            let snippet = table.get(key).unwrap();
-                            (key.clone(), snippet)
-                        })
-                        .collect();
-
-                    // 3. Return the result as a JSON string
-                    match serde_json::to_string_pretty(&ordered) {
-                        Ok(snippets) => Ok(snippets),
-                        Err(e) => Err(TektonError::Reason(e.to_string())),
-                    }
-                }
-            }
-        }
     }
 }
 

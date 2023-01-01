@@ -13,25 +13,30 @@ pub fn sort_handler(sort: SortCommand) -> Result<(), TektonError> {
     // the counter variable
     let mut file_count = 0;
     // Determines if the user will need to be invovled or not.
-    let mode = sort.interactive.is_some();
+    let is_interactive = sort.interactive.is_some();
+    let mut is_directory = false;
     // The candidates of files to potentially sort
     let files = crawl_files(sort.path, sort.crawl);
 
-    println!("[Tekton]: Files counted: {}", files.len());
-
-    let files_to_try: Vec<Option<String>> = files
+    let files_to_correct: Vec<Option<String>> = files
         .iter()
-        .filter(|file| !file.metadata().unwrap().is_dir())
+        .filter(|file| {
+            if file.metadata().unwrap().is_dir() {
+                is_directory = true;
+            }
+            !file.metadata().unwrap().is_dir()
+        })
         .map(|file| {
             file_count += 1;
             let fname: String = file.clone().into_os_string().to_str().unwrap().to_string(); // this isn't the best thing on Earth.
             let extensions = (get_filetype(&fname).unwrap(), SORT);
-            match composer(&fname, extensions, mode) {
+            match composer(&fname, extensions, is_interactive) {
                 Ok(snippets) => {
                     write_to_file(fname, snippets);
                     None
                 }
-                Err(_) => {
+                Err(_e) => {
+                    //println!("[Error]: {}\n\t--> {}", e, fname);
                     file_count -= 1;
                     Some(fname)
                 }
@@ -39,8 +44,8 @@ pub fn sort_handler(sort: SortCommand) -> Result<(), TektonError> {
         })
         .collect();
 
-    if sort.interactive.is_none() {
-        for name in files_to_try.iter().flatten() {
+    if is_interactive {
+        for name in files_to_correct.iter().flatten() {
             file_count += 1;
             let snippets = multiprefix_composer(name);
             match snippets {
@@ -51,6 +56,27 @@ pub fn sort_handler(sort: SortCommand) -> Result<(), TektonError> {
                     file_count -= 1;
                 }
             }
+        }
+    } else {
+
+        let mut error_message: String = "".to_string();
+        // Displays a warning message if there are issues
+        if !files_to_correct.is_empty() {
+            error_message += "[ Warn ]: Issues found with these files: ";
+            for name in files_to_correct.into_iter().flatten() {
+                error_message = error_message + &"\n\t" + &name;
+            }
+
+            println!(
+                "{}\n\n[Tekton]: Run with interactive mode to be able to fix any issues in the files listed.",
+                error_message
+            );
+        } else if is_directory && !is_interactive {
+            println!(
+                "[ Warn ]: You provided a directory, without the `crawl` argument.\n\t  Try again."
+            );
+        } else {
+            println!("[Tekton]: No errors detected in the file(s).");
         }
     }
     println!("[Tekton]: Files sorted: {}", file_count);
