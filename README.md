@@ -1,12 +1,12 @@
-# Tekton
+# tekton   [![Latest Version]][crates.io] ![Workflow]
 
-![Workflow](https://github.com/OkelleyDevelopment/tekton/actions/workflows/ci.yml/badge.svg)
+[Workflow]: https://github.com/OkelleyDevelopment/tekton/actions/workflows/ci.yml/badge.svg
+[Latest Version]: https://img.shields.io/crates/v/tekton.svg
+[crates.io]: https://crates.io/crates/tekton
 
 Author(s): Nicholas O'Kelley
 
-Date: 2022-08-28
-
-Last Modified: 2023-01-02
+Date started: 2022-08-28
 
 NOTE: This is still a tool in 'alpha' and might rapidly change, though notice will be made if that happens.
 
