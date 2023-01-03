@@ -6,9 +6,9 @@ Author(s): Nicholas O'Kelley
 
 Date: 2022-08-28
 
-Last Modified: 2022-12-25
+Last Modified: 2023-01-02
 
-NOTE: This is still a tool in alpha and might rapidly change.
+NOTE: This is still a tool in 'alpha' and might rapidly change, though notice will be made if that happens.
 
 ## Motivation
 
@@ -18,9 +18,8 @@ I needed a tool to speed up the time I spent reviewing snippets on the [`friendl
 The goals of such a tool are:
 
 - Sort many files **blazingly fast** 
-- Sort alphabetically
-- Ideally convert between snipmate and friendly-snippets (json) formats
-
+- (Ideally) Sort alphabetically **blazingly fast**
+- Convert between snipmate and friendly-snippets (json) formats **blazingly** ... **fast**
 
 
 ## Installation and Execution
@@ -40,15 +39,15 @@ Note: If anything appears after the `<INPUT_FILENAME>` the program assumes the u
 
 ## Current Limitations
 
-- The conversion doesn't process in large batches of files like the sort. This is intentional as conversions between formats should be isolated and limited in scope.
+1. The conversion doesn't process in large batches of files like the sort. This is intentional as conversions between formats should be isolated and limited in scope.
+2. Snippet files with an array in the `prefix` field (even if it is just one) will convert all the snippets in the file to have that same array 
+    - From testing, this doesn't seem to impact performance at all in terms of the user of the snippet file
 
 ## Acknowledgements
 
 - My impatience for doing this by hand 
 
-## Demo
+## Small Demo
 
-### Sorting Speeds
-
-<img  src="./images/sort_demo.png" alt="sort demo" />
+<img  src="./images/demo.png" alt="cli demo" />
 

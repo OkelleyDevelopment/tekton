@@ -38,11 +38,12 @@ pub fn dynamic_prefix_combinator(file_content: &str) -> Result<MultiPrefixTable,
     Ok(MultiPrefixTable { snippets })
 }
 
+// Private function to handle parsing out the prefix.
 fn retrieve_prefix(val: &serde_json::Value) -> Result<Vec<String>, TektonError> {
     if let Some(array) = val.as_array() {
         Ok(array
             .iter()
-            .map(|e| e.as_str().unwrap().to_string())
+            .filter_map(|e| e.as_str().map(|val| val.to_string()))
             .collect())
     } else if let Some(prefix) = val.as_str() {
         Ok(vec![prefix.to_string()])
