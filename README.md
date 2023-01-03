@@ -1,38 +1,55 @@
-# Tekton
+# tekton   [![Latest Version]][crates.io] ![Workflow]
 
-![Workflow](https://github.com/OkelleyDevelopment/tekton/actions/workflows/rust.yml/badge.svg)
+[Workflow]: https://github.com/OkelleyDevelopment/tekton/actions/workflows/ci.yml/badge.svg
+[Latest Version]: https://img.shields.io/crates/v/tekton.svg
+[crates.io]: https://crates.io/crates/tekton
 
 Author(s): Nicholas O'Kelley
 
-Date: 2022-08-28
+Date started: 2022-08-28
 
-NOTE: This is still a tool in alpha and might rapidly change.
+NOTE: This is still a tool in 'alpha' and might rapidly change, though notice will be made if that happens.
 
 ## Motivation
 
-I needed a **blazingly fast** tool to speed up my ability to convert
-`.snippets` files to `.json` for the
-[`friendly-snippet`](https://github.com/rafamadriz/friendly-snippets) project. The goal
-of this project is now to allow various snippet mappings to coexist.
+I needed a tool to speed up the time I spent reviewing snippets on the [`friendly-snippet`](https://github.com/rafamadriz/friendly-snippets) project.
+
+
+The goals of such a tool are:
+
+- Sort many files **blazingly fast** 
+- (Ideally) Sort alphabetically **blazingly fast**
+- Convert between snipmate and friendly-snippets (json) formats **blazingly** ... **fast**
+
 
 ## Installation and Execution
 
 - `cargo install tekton`
 
-- `tekton <snippet file to convert> <json output file>`
+To convert: 
 
+- `tekton convert <INPUT_FILENAME> <OUTPUT_FILENAME> [INTERACTIVE]`
 
-## Future Goals
+The current mappings support bidirectional conversion between Snipmate (`.snippet`) and JSON
 
-These are current ideas I've got in mind, but there is currently not a
-definitive road map for which would finished first.
+To sort: 
+- `tekton sort <INPUT_FILENAME> [crawl] [INTERACTIVE]`
 
-- Provide options for snippets
-- A better cli interface
-- Allow users to switch JSON back to the `.snippet` format
-- Edit descriptions?
+Note: 
+- If anything appears after the `<INPUT_FILENAME>` the program assumes the user wants to crawl directories for files.
+- The interactive option allows the user to potentially correct any errors that arise. Leaving  this off will simply mean an error report is displayed on screen
 
+## Current Limitations
+
+1. The conversion doesn't process in large batches of files like the sort. This is intentional as conversions between formats should be isolated and limited in scope.
+2. Snippet files with an array in the `prefix` field (even if it is just one) will convert all the snippets in the file to have that same array 
+    - From testing, this doesn't seem to impact performance at all in terms of the user of the snippet file
 
 ## Acknowledgements
 
-- My impatience for doing this by hand
+- My impatience for doing this by hand 
+
+## Small Demo
+
+<img  src="./images/demo.png" alt="cli demo" />
+
