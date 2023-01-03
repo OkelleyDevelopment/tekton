@@ -28,14 +28,16 @@ The goals of such a tool are:
 
 To convert: 
 
-- `tekton convert <INPUT_FILENAME> <OUTPUT_FILENAME>`
+- `tekton convert <INPUT_FILENAME> <OUTPUT_FILENAME> [INTERACTIVE]`
 
 The current mappings support bidirectional conversion between Snipmate (`.snippet`) and JSON
 
 To sort: 
-- `tekton sort <INPUT_FILENAME> [crawl]`
+- `tekton sort <INPUT_FILENAME> [crawl] [INTERACTIVE]`
 
-Note: If anything appears after the `<INPUT_FILENAME>` the program assumes the user wants to crawl directories for files.
+Note: 
+- If anything appears after the `<INPUT_FILENAME>` the program assumes the user wants to crawl directories for files.
+- The interactive option allows the user to potentially correct any errors that arise. Leaving  this off will simply mean an error report is displayed on screen
 
 ## Current Limitations
 
