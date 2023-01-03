@@ -1,6 +1,5 @@
 //!
-//! TODO: Ideally this file will be removed if we can make the hashmap
-//! generic.
+//! The core representation for the snippets with multiple prefixes.
 //!
 
 use serde::{Deserialize, Serialize};

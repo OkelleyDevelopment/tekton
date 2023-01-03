@@ -28,7 +28,7 @@ pub fn sort_handler(sort: SortCommand) -> Result<(), TektonError> {
         })
         .map(|file| {
             file_count += 1;
-            let fname: String = file.clone().into_os_string().to_str().unwrap().to_string(); // this isn't the best thing on Earth.
+            let fname: String = file.clone().into_os_string().to_str().unwrap().to_string(); // this isn't the best thing on Earth. Now Pluto? Perhaps.
             let extensions = (get_filetype(&fname).unwrap(), SORT);
             match composer(&fname, extensions, is_interactive) {
                 Ok(snippets) => {
@@ -36,7 +36,6 @@ pub fn sort_handler(sort: SortCommand) -> Result<(), TektonError> {
                     None
                 }
                 Err(_e) => {
-                    //println!("[Error]: {}\n\t--> {}", e, fname);
                     file_count -= 1;
                     Some(fname)
                 }
@@ -58,13 +57,12 @@ pub fn sort_handler(sort: SortCommand) -> Result<(), TektonError> {
             }
         }
     } else {
-
         let mut error_message: String = "".to_string();
         // Displays a warning message if there are issues
         if !files_to_correct.is_empty() {
             error_message += "[ Warn ]: Issues found with these files: ";
             for name in files_to_correct.into_iter().flatten() {
-                error_message = error_message + &"\n\t" + &name;
+                error_message = error_message + "\n\t" + &name;
             }
 
             println!(

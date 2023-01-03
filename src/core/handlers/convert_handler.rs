@@ -1,3 +1,5 @@
+//! The entry point into the conversion of snippets
+
 use crate::{
     core::composer::composer,
     errors::TektonError,

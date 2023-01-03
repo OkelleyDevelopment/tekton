@@ -5,6 +5,12 @@ use crate::{
 use regex::{bytes::RegexSetBuilder, Regex};
 
 /// A function to convert JSON snippets to Snipmate snippets
+///
+/// Arguments:
+/// - `friendlies`: the structure holding the table of snippets.
+///
+/// Returns:
+/// - Result of the composed snipmate string representation or an error
 pub fn compose_snipmate_snippets(friendlies: FriendlySnippets) -> Result<String, TektonError> {
     let snippets = create_snipmate_structs_from_json(friendlies)?;
     let snipmate_string = build_snipmate_string(snippets)?;
@@ -12,17 +18,34 @@ pub fn compose_snipmate_snippets(friendlies: FriendlySnippets) -> Result<String,
 }
 
 /// A function to create a string representation of a Vec of Snipmate Snippets
+///
+/// Arguments:
+/// - `snippets`: a vector of Snipmate snippets to convert to a string
+///
+/// Returns:
+/// - The built string or an error if there are zero (0) snippets
 pub fn build_snipmate_string(snippets: Vec<Snipmate>) -> Result<String, TektonError> {
-    let mut snipmate_string = String::from("");
-    for snip in snippets {
-        snipmate_string = snipmate_string + &snip.display();
+    match snippets.len() {
+        0 => Err(TektonError::Reason("No snippets to convert".to_string())),
+        _ => {
+            let mut snipmate_string = String::from("");
+            for snip in snippets {
+                snipmate_string = snipmate_string + &snip.display();
+            }
+            Ok(snipmate_string)
+        }
     }
-    Ok(snipmate_string)
 }
 
 /// Function to generate a Vec of Snippet structs from parsed JSON, will return TektonError if Vec is empty
 ///
 /// This function does not ensure any sorting of snippets from the parsed HashMap.
+///
+/// Arguments:
+/// - `friendlies`: the structure that holds the table of snippets
+///
+/// Returns:
+/// - A resulting vector of Snipmate snippets or an error
 pub fn create_snipmate_structs_from_json(
     friendlies: FriendlySnippets,
 ) -> Result<Vec<Snipmate>, TektonError> {
@@ -61,6 +84,12 @@ pub fn create_snipmate_structs_from_json(
 }
 
 /// Function to construct the Snipmate structs from a Vec<String> representing the snippet file that was read in.
+///
+/// Arguments:
+/// - `lines`: a vector with the snipmate source file read in as a vec of strings
+///
+/// Returns:
+/// - A vec of snipmate snippets (length can be 0), expects caller to check this condition
 pub fn build_snippets_from_file(lines: Vec<String>) -> Vec<Snipmate> {
     let mut snippets: Vec<Snipmate> = Vec::new();
     let tab = String::from("\\t");
@@ -98,21 +127,12 @@ pub fn build_snippets_from_file(lines: Vec<String>) -> Vec<Snipmate> {
 }
 
 #[test]
-fn test_building_a_snippet_from_file() {
-    let input: Vec<String> = vec!["snippet test".to_string(), "   test snippet".to_string()];
+fn test_building_snipmate_on_empty_string() {
+    let input: Vec<String> = vec![];
 
     let snippets = build_snippets_from_file(input);
 
-    assert_eq!(snippets.len(), 1);
-    let snip = snippets.get(0).unwrap();
-    let expected = Snipmate::new(
-        "test".to_string(),
-        vec!["   test snippet".to_string()],
-        Some("".to_string()),
-    );
-    assert_eq!(snip.prefix, expected.prefix);
-    assert_eq!(snip.body, expected.body);
-    assert_eq!(snip.description, expected.description);
+    assert_eq!(snippets.len(), 0);
 }
 
 #[test]
@@ -120,7 +140,7 @@ fn test_building_snippets_from_file() {
     let input: Vec<String> = vec![
         "snippet test".to_string(),
         "   test snippet".to_string(),
-        "snippet test2".to_string(),
+        "snippet test2 an epic description".to_string(),
         "    a second snippet".to_string(),
         "    with several".to_string(),
         "    lines.".to_string(),
@@ -144,7 +164,7 @@ fn test_building_snippets_from_file() {
                 "    with several".to_string(),
                 "    lines.".to_string(),
             ],
-            Some("".to_string()),
+            Some("an epic description".to_string()),
         ),
     ];
     assert_eq!(snip.prefix, expected.get(0).unwrap().prefix);
@@ -164,8 +184,8 @@ fn test_output_string() {
 
     if let Ok(res) = build_snipmate_string(snippets) {
         let spaces = "   "; // Note four spaces
-        let expexted: &str = &("snippet test\n\t".to_owned() + spaces + "test snippet\n");
-        assert_eq!(res, expexted);
+        let expected: &str = &("snippet test\n\t".to_owned() + spaces + "test snippet\n");
+        assert_eq!(res, expected);
     } else {
         assert!(false);
     }

@@ -12,7 +12,13 @@ use crate::{
 use regex::Regex;
 use std::{collections::HashMap, fs};
 
-/// A helper function to handle Snipmate to JSON
+/// Function to handle Snipmate to JSON
+///
+/// Arguments:
+/// - `lines`: the lines of Snipmate snippets to be converted
+///
+/// Returns:
+/// - The converted JSON string representation or an error
 pub fn compose_friendly_snippets(lines: Vec<String>) -> Result<String, TektonError> {
     let snips = build_snippets_from_file(lines);
     let friendlies = convert_snipmate_to_friendlysnippets(snips);
@@ -21,15 +27,21 @@ pub fn compose_friendly_snippets(lines: Vec<String>) -> Result<String, TektonErr
 }
 
 /// A function that takes the FriendlySnippet table and returns an ordered string representation or a TektonError
+///
+/// Arguments:
+/// - `friendlies`: the snippets that will be converted to a string
+///
+/// Returns:
+/// - The string with 1 to many snippets or an error.
 pub fn build_friendly_string(friendlies: FriendlySnippets) -> Result<String, TektonError> {
     hash2ordered_string(&friendlies.snippets)
 }
 
 /// A function to convert an array of Snipmate structs to an array of FriendlySnippet structs
-/// 
+///
 /// Arguments:
-/// - `snips`: the vector of Snipmate snippets to be converted 
-/// 
+/// - `snips`: the vector of Snipmate snippets to be converted
+///
 /// Returns:
 /// - The table of FriendlySnippets with 0 to many snippets (more or less).
 pub fn convert_snipmate_to_friendlysnippets(snips: Vec<Snipmate>) -> FriendlySnippets {
@@ -74,7 +86,7 @@ pub fn convert_snipmate_to_friendlysnippets(snips: Vec<Snipmate>) -> FriendlySni
 }
 
 /// Helper function to read the JSON as a `FriendlySnippets` struct
-/// 
+///
 /// Arguments:
 /// - `file_name`: a string of the input file
 /// - `interactive`: a boolean indicating if the user will be invovled or not
@@ -100,11 +112,11 @@ pub fn read_in_json_snippets(
 /// The [read_in_json_snippets] function should be preferred, however the ordering of fields in JSON isn't promised
 /// and thus, this function builds the HashMap (backing the `FriendlySnippets` structure) by dynamically searching the
 /// the table for the necessary fields and handling the missing ones more appropriately.
-/// 
+///
 /// Arguments:
 /// - `file`: a string of the input file
 /// - `interactive`: a boolean indicating if the user will be invovled or not
-/// 
+///
 /// Returns:
 /// - Result of the snippets read in or an error
 pub fn dynamically_read_json_snippets(
@@ -253,7 +265,7 @@ pub fn retrieve_body(val: &serde_json::Value) -> Vec<String> {
 ///
 /// Arguments:
 /// - `snippets`: The snippets to be sorted
-/// 
+///
 /// Returns:
 /// - A result with the sorted string or an error if there were zero (0) snippets
 pub fn sort_friendly_snippets(snippets: FriendlySnippets) -> Result<String, TektonError> {
