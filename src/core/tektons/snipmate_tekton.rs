@@ -1,6 +1,9 @@
 use crate::{
     errors::TektonError,
-    models::{friendly::FriendlySnippets, snipmate::Snipmate},
+    models::{
+        friendly::{FriendlySnippets, Table},
+        snipmate::Snipmate,
+    },
 };
 use regex::{bytes::RegexSetBuilder, Regex};
 
@@ -49,7 +52,7 @@ pub fn build_snipmate_string(snippets: Vec<Snipmate>) -> Result<String, TektonEr
 pub fn create_snipmate_structs_from_json(
     friendlies: FriendlySnippets,
 ) -> Result<Vec<Snipmate>, TektonError> {
-    let table = friendlies.snippets;
+    let table: Table = friendlies.snippets;
     if table.is_empty() {
         return Err(TektonError::Reason("No snippets to convert".to_string()));
     }
@@ -58,16 +61,11 @@ pub fn create_snipmate_structs_from_json(
     let mut count: usize = 0;
     let mut snipmate_snippets: Vec<Snipmate> = Vec::new();
     for (_name, v) in table {
-        let description = match v.description {
-            Some(description) => description,
-            None => "".to_string(),
-        };
-
         if let Some(prefix) = v.prefix {
             let snip: Snipmate = Snipmate {
                 prefix,
                 body: v.body,
-                description: Some(description),
+                description: v.description,
             };
             count += 1;
             snipmate_snippets.push(snip)
@@ -110,8 +108,12 @@ pub fn build_snippets_from_file(lines: Vec<String>) -> Vec<Snipmate> {
             let mut desc = s.collect::<Vec<&str>>().join(" ");
             desc = re.replace_all(&desc, "").to_string();
             desc = desc.replace('\"', "");
+            let description: Option<String> = match desc.len() {
+                0 => None,
+                _ => Some(desc),
+            };
             // Building the snippet and adding to the array
-            snippets.push(Snipmate::new(name, Vec::new(), Some(desc)));
+            snippets.push(Snipmate::new(name, Vec::new(), description));
         }
         // Continue to add the body of the snippet to the most recently
         // added snippet struct.
@@ -155,7 +157,7 @@ fn test_building_snippets_from_file() {
         Snipmate::new(
             "test".to_string(),
             vec!["   test snippet".to_string()],
-            Some("".to_string()),
+            None,
         ),
         Snipmate::new(
             "test2".to_string(),
@@ -184,7 +186,7 @@ fn test_output_string() {
 
     if let Ok(res) = build_snipmate_string(snippets) {
         let spaces = "   "; // Note four spaces
-        let expected: &str = &("snippet test\n\t".to_owned() + spaces + "test snippet\n");
+        let expected: &str = &("snippet test\n\t".to_string() + spaces + "test snippet\n");
         assert_eq!(res, expected);
     } else {
         assert!(false);

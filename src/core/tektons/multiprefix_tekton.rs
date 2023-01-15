@@ -28,7 +28,7 @@ pub fn dynamic_prefix_combinator(file_content: &str) -> Result<MultiPrefixTable,
                 }
                 Err(e) => {
                     let message =
-                        "Failed on snippet ---> ".to_owned() + &name + " | " + &e.to_string();
+                        "Failed on snippet ---> ".to_string() + &name + " | " + &e.to_string();
                     return Err(TektonError::Reason(message));
                 }
             }

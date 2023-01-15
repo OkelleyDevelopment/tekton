@@ -22,22 +22,27 @@ The goals of such a tool are:
 - Convert between snipmate and friendly-snippets (json) formats **blazingly** ... **fast**
 
 
-## Installation and Execution
+## Installation and Usage
 
 - `cargo install tekton`
 
+### Usage
+
 To convert: 
 
-- `tekton convert <INPUT_FILENAME> <OUTPUT_FILENAME> [INTERACTIVE]`
+- `tekton convert <INPUT_FILENAME> <OUTPUT_FILENAME>`
 
-The current mappings support bidirectional conversion between Snipmate (`.snippet`) and JSON
+> Note: 
+> - Conversion supports bidirectional conversion between Snipmate (`*.snippet`) and JSON snippets
+> - Mapping is based on the input file
+
 
 To sort: 
 - `tekton sort <INPUT_FILENAME> [crawl] [INTERACTIVE]`
 
-Note: 
-- If anything appears after the `<INPUT_FILENAME>` the program assumes the user wants to crawl directories for files.
-- The interactive option allows the user to potentially correct any errors that arise. Leaving  this off will simply mean an error report is displayed on screen
+> Note: 
+> - If anything appears after the `<INPUT_FILENAME>` the program assumes the user wants to crawl directories for files.
+> - The interactive option allows the user to potentially correct any errors that arise. Leaving  this off will simply mean an error report is displayed on screen
 
 ## Current Limitations
 
@@ -49,7 +54,14 @@ Note:
 
 - My impatience for doing this by hand 
 
-## Small Demo
+## Demos
 
-<img  src="./images/demo.png" alt="cli demo" />
+### Conversion
+
+<img  src="./images/convert.png" alt="cli demo" />
+
+
+### Sorting
+
+<img src="./images/sorting.png" alt="sorting demo" />
 

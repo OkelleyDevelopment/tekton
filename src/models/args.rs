@@ -23,8 +23,6 @@ pub struct ConversionCommand {
     pub input_filename: String,
     /// The output filename
     pub output_filename: String,
-    /// If present, the program may prompt for intput
-    pub interactive: Option<String>,
 }
 
 #[derive(Debug, Args)]
