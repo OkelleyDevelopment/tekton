@@ -29,8 +29,8 @@ pub struct ConversionCommand {
 pub struct SortCommand {
     /// Path to the snippets file or directory to crawl
     pub path: String,
-    /// If present, then the path should be to a directory
-    pub crawl: Option<String>,
     /// If present, then the program will prompt for user input.
     pub interactive: Option<String>,
+    /// If present, then the path should be to a directory
+    pub crawl: Option<String>,
 }
