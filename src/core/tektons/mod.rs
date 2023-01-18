@@ -28,7 +28,7 @@ mod tests {
                 assert_eq!(other.len(), 1);
                 let s = &other[0];
                 assert_eq!(s.description, snippet.description);
-            },
+            }
             Err(e) => panic!("{}", e),
         }
     }
