@@ -1,8 +1,9 @@
-# tekton   [![Latest Version]][crates.io] ![Workflow]
+# tekton   [![Latest Version]][crates.io] ![Workflow] ![Rustc Version 1.66+]
 
 [Workflow]: https://github.com/OkelleyDevelopment/tekton/actions/workflows/ci.yml/badge.svg
 [Latest Version]: https://img.shields.io/crates/v/tekton.svg
 [crates.io]: https://crates.io/crates/tekton
+[Rustc Version 1.66+]: https://img.shields.io/badge/rustc-1.66+-blue.svg
 
 Author(s): Nicholas O'Kelley
 
@@ -28,40 +29,40 @@ The goals of such a tool are:
 
 ### Usage
 
-To convert: 
+**To convert**: 
 
 - `tekton convert <INPUT_FILENAME> <OUTPUT_FILENAME>`
 
 > Note: 
-> - Conversion supports bidirectional conversion between Snipmate (`*.snippet`) and JSON snippets
+> - Conversion supports bidirectional conversion between Snipmate (`*.snippet`) and JSON (`*.json`) snippets
 > - Mapping is based on the input file
 
 
-To sort: 
-- `tekton sort <INPUT_FILENAME> [crawl] [INTERACTIVE]`
+**To sort**: 
+
+- General format: `tekton sort <INPUT_FILENAME> [INTERACTIVE] [CRAWL]`
+    - To sort a single file 
+        - `tekton sort <INPUT_NAME>`
+    - To sort a directory: `tekton sort <INPUT_NAME> no true`
 
 > Note: 
-> - If anything appears after the `<INPUT_FILENAME>` the program assumes the user wants to crawl directories for files.
-> - The interactive option allows the user to potentially correct any errors that arise. Leaving  this off will simply mean an error report is displayed on screen
+> - `INTERACTIVE` should be the string `yes` if the user wants to fix any errors during the sort.
+>   - Leaving  this off will simply mean an error report is displayed on screen
+>
+> - `CRAWL` must be present to recursively walk the directories for snippets
+>   - Any text present will result in a crawl, though `true` looks better.
+
+
 
 ## Current Limitations
 
 1. The conversion doesn't process in large batches of files like the sort. This is intentional as conversions between formats should be isolated and limited in scope.
-2. Snippet files with an array in the `prefix` field (even if it is just one) will convert all the snippets in the file to have that same array 
-    - From testing, this doesn't seem to impact performance at all in terms of the user of the snippet file
+    - This can be automated via other scripting means (Bash, Python, Go, etc).
+2. Snippet files with an array in the `prefix` field (even if it is just one) will convert all the snippets in the file to then have their snippets inserted into an array too.
+    - From testing, this doesn't seem to impact performance at all in terms of the snippets loading in the snippet loading tooling.
 
+3. Currently do not sort Snipmate snippets.
+    
 ## Acknowledgements
 
 - My impatience for doing this by hand 
-
-## Demos
-
-### Conversion
-
-<img  src="./images/convert.png" alt="cli demo" />
-
-
-### Sorting
-
-<img src="./images/sorting.png" alt="sorting demo" />
-
