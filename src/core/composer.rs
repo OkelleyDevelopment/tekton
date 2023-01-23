@@ -58,7 +58,7 @@ pub fn composer(
 /// Returns:
 /// - Result of String (to write to file) or a TektonError with the reason for the error
 pub fn multiprefix_composer(fname: &str) -> Result<String, TektonError> {
-    match fs::read_to_string(&fname) {
+    match fs::read_to_string(fname) {
         Ok(file_content) => {
             let snippets = dynamic_prefix_combinator(&file_content)?;
             // order_friendly_snippets(snippets)

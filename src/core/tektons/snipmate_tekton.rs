@@ -93,7 +93,7 @@ pub fn build_snippets_from_file(lines: Vec<String>) -> Vec<Snipmate> {
     let tab = String::from("\\t");
     let tab_regex = Regex::new(&tab).unwrap();
 
-    let set = RegexSetBuilder::new(&[r#"snippet ([a-zA-Z0-9]*)"#])
+    let set = RegexSetBuilder::new([r#"snippet ([a-zA-Z0-9]*)"#])
         .case_insensitive(true)
         .build()
         .expect("failed");

@@ -129,7 +129,7 @@ where
 
             // 4. Return the result as a JSON string
             match serde_json::to_string_pretty(&ordered) {
-                Ok(snippets) => Ok(snippets),
+                Ok(string) => Ok(string),
                 Err(e) => Err(TektonError::Reason(e.to_string())),
             }
         }

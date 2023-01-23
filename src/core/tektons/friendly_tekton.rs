@@ -12,6 +12,8 @@ use crate::{
 use regex::Regex;
 use std::{collections::HashMap, fs};
 
+const MISSING_PREFIX: &str = "File contains snippets with missing prefix field(s). Aborting.";
+
 /// Function to handle Snipmate to JSON
 ///
 /// Arguments:
@@ -94,7 +96,7 @@ pub fn read_in_json_snippets(
     file_name: &str,
     interactive: bool,
 ) -> Result<FriendlySnippets, TektonError> {
-    let file_contents = fs::read_to_string(&file_name)?;
+    let file_contents = fs::read_to_string(file_name)?;
 
     let snippets: Result<FriendlySnippets, serde_json::Error> =
         serde_json::from_str(&file_contents);
@@ -155,14 +157,13 @@ pub fn dynamically_read_json_snippets(
             } else {
                 // Return an error, this is useful for automation since errors can be collected
                 // and addressed after the batch is finished.
-                return Err(TektonError::Reason(
-                    "File contains snippets with missing prefix field(s). Aborting.".into(),
-                ));
+                return Err(TektonError::Reason(MISSING_PREFIX.into()));
             }
 
             // Insert the finished snippet into the table
             snippets.insert(name.to_string(), snip_body);
         }
+        // Congrats, it is later, now to fix the snippets
         correct_missing_prefix_snippets(&mut snippets_to_fix, &mut snippets);
     }
 
@@ -460,6 +461,46 @@ mod tests {
             Err(e) => {
                 println!("Error: {}", e.to_string());
                 assert!(false);
+            }
+        }
+    }
+    #[test]
+    fn serialization_missing_prefix() {
+        let file = r#"{
+    "Filter downcase": {
+      "body": "| downcase }}"
+    }}"#
+        .to_string();
+
+        let res = dynamically_read_json_snippets(file, INTERACTIVE);
+
+        match res {
+            Ok(_) => {
+                assert!(false);
+            }
+            Err(e) => {
+                assert_eq!(e, TektonError::Reason(MISSING_PREFIX.into()));
+            }
+        }
+    }
+
+    #[test]
+    fn serialization_missing_prefix_throw_error() {
+        let file = r#"{
+        "Filter downcase": {
+          "body": "| downcase }}"
+        }
+    }"#
+        .to_string();
+
+        let res = dynamically_read_json_snippets(file, INTERACTIVE);
+
+        match res {
+            Ok(_) => {
+                assert!(false, "Failed to throw the error");
+            }
+            Err(e) => {
+                assert_eq!(e, TektonError::Reason(MISSING_PREFIX.into()));
             }
         }
     }

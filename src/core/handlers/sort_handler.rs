@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use crate::{
     core::composer::{composer, multiprefix_composer},
     errors::TektonError,
@@ -6,78 +8,136 @@ use crate::{
 };
 
 // A named constant for the sort option
-const SORT: &str = "tekton-sort";
+const SORT_COMMAND_SLICE: &str = "tekton-sort";
 
 /// Hanlder for the Sorting Mechanism
+///
+/// Arguments
+/// - `sort` : the parameters from the CLI
+///
+/// Returns
+/// - An ok result or a TektonError
+///
 pub fn sort_handler(sort: SortCommand) -> Result<(), TektonError> {
-    // the counter variable
-    let mut file_count = 0;
-    // Determines if the user will need to be invovled or not.
-    let is_interactive = sort.interactive.is_some();
-    let mut is_directory = false;
-    // The candidates of files to potentially sort
-    let files = crawl_files(sort.path, sort.crawl);
+    let mut manager: SortConfigManager = SortConfigManager::new(sort.crawl.is_some());
+    manager.set_interactive(sort.interactive);
 
-    let files_to_correct: Vec<Option<String>> = files
+    let crawled_files_and_dirs = crawl_files(sort.path, sort.crawl);
+    let filtered_files: Vec<&std::path::PathBuf> = crawled_files_and_dirs
         .iter()
-        .filter(|file| {
-            if file.metadata().unwrap().is_dir() {
-                is_directory = true;
+        .filter(|buf| {
+            if buf.metadata().unwrap().is_dir() {
+                manager.is_path_directory = true;
             }
-            !file.metadata().unwrap().is_dir()
-        })
-        .map(|file| {
-            file_count += 1;
-            let fname: String = file.clone().into_os_string().to_str().unwrap().to_string(); // this isn't the best thing on Earth. Now Pluto? Perhaps.
-            let extensions = (get_filetype(&fname).unwrap(), SORT);
-            match composer(&fname, extensions, is_interactive) {
-                Ok(snippets) => {
-                    write_to_file(fname, snippets);
-                    None
-                }
-                Err(_e) => {
-                    file_count -= 1;
-                    Some(fname)
-                }
-            }
+            !buf.metadata().unwrap().is_dir()
         })
         .collect();
 
-    if is_interactive {
-        for name in files_to_correct.iter().flatten() {
-            file_count += 1;
+    if manager.is_path_directory && !manager.is_crawling {
+        println!("[ WARN ]: Provided a directory without crawling.\n\t  Try again.");
+        return Ok(());
+    }
+
+    let files_to_correct: Vec<String> = manager.first_pass_sorting(filtered_files);
+
+    if !manager.is_interactive {
+        if let Some(message) = manager.gen_files_to_correct_string(files_to_correct) {
+            println!("{}", message);
+        }
+    } else {
+        for name in files_to_correct.iter() {
             let snippets = multiprefix_composer(name);
             match snippets {
-                Ok(s) => write_to_file(name.to_string(), s),
+                Ok(s) => {
+                    manager.file_count += 1;
+                    write_to_file(name.to_string(), s)
+                }
                 Err(e) => {
-                    println!("[Tekton Error]: Unable to process file: `{}`", &name);
-                    println!("{}\n", e);
-                    file_count -= 1;
+                    println!(
+                        "[Tekton Error]: Unable to process file: `{}`\n\t{}",
+                        &name, e
+                    );
+                    manager.corrections_passed = false;
                 }
             }
         }
-    } else {
-        let mut error_message: String = "".to_string();
-        // Displays a warning message if there are issues
-        if !files_to_correct.is_empty() {
-            error_message += "[ Warn ]: Issues found with these files: ";
-            for name in files_to_correct.into_iter().flatten() {
-                error_message = error_message + "\n\t" + &name;
-            }
-
-            println!(
-                "{}\n\n[Tekton]: Run with interactive mode to be able to fix any issues in the files listed.",
-                error_message
-            );
-        } else if is_directory && !is_interactive {
-            println!(
-                "[ Warn ]: You provided a directory, without the `crawl` argument.\n\t  Try again."
-            );
-        } else {
+        if manager.corrections_passed {
             println!("[Tekton]: No errors detected in the file(s).");
         }
     }
-    println!("[Tekton]: Files sorted: {}", file_count);
+
+    println!("[Tekton]: Files sorted: {}", manager.file_count);
 
     Ok(())
+}
+
+struct SortConfigManager {
+    pub file_count: usize,
+    pub is_interactive: bool,
+    pub is_crawling: bool,
+    pub is_path_directory: bool,
+    pub corrections_passed: bool,
+}
+
+impl SortConfigManager {
+    pub fn new(is_crawling: bool) -> Self {
+        Self {
+            file_count: 0,
+            is_interactive: false,
+            is_crawling,
+            is_path_directory: false,
+            corrections_passed: true,
+        }
+    }
+
+    pub fn set_interactive(&mut self, input: Option<String>) {
+        self.is_interactive = match input {
+            Some(val) => val == "yes",
+            None => false,
+        };
+    }
+
+    pub fn first_pass_sorting(&mut self, filtered_files: Vec<&PathBuf>) -> Vec<String> {
+        let return_list: Vec<String> = filtered_files
+            .iter()
+            .filter_map(|file| {
+                let fname: String = <&std::path::PathBuf>::clone(file)
+                    .as_os_str()
+                    .to_str()
+                    .unwrap()
+                    .to_string();
+                let extensions = (get_filetype(&fname).unwrap(), SORT_COMMAND_SLICE);
+                match composer(&fname, extensions, self.is_interactive) {
+                    Ok(snippets) => {
+                        write_to_file(fname, snippets);
+                        self.file_count += 1;
+                        None
+                    }
+                    Err(_e) => Some(fname),
+                }
+            })
+            .collect();
+
+        return_list
+    }
+
+    pub fn gen_files_to_correct_string(&self, files_to_correct: Vec<String>) -> Option<String> {
+        let mut error_message: String = "".to_string();
+
+        if files_to_correct.is_empty() {
+            error_message += "[Tekton]: No errors detected in the file(s).";
+        } else {
+            error_message += "[ Warn ]: Issues found with these files: ";
+            for name in files_to_correct.iter() {
+                error_message = error_message + "\n\t" + name;
+            }
+            error_message += "\n\n[Tekton]: Run with interactive mode to be able to fix any issues in the files listed.";
+        }
+
+        if error_message.is_empty() {
+            None
+        } else {
+            Some(error_message)
+        }
+    }
 }
