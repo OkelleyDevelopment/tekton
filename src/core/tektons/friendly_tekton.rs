@@ -97,7 +97,6 @@ pub fn read_in_json_snippets(
     interactive: bool,
 ) -> Result<FriendlySnippets, TektonError> {
     let file_contents = fs::read_to_string(file_name)?;
-
     let snippets: Result<FriendlySnippets, serde_json::Error> =
         serde_json::from_str(&file_contents);
     match snippets {
