@@ -1,9 +1,11 @@
-# tekton   [![Latest Version]][crates.io] ![Workflow] ![Rustc Version 1.66+]
+# tekton [![Latest Version]][crates.io] ![Workflow] ![Rustc Version 1.66+]
+
 ---
-[Workflow]: https://github.com/OkelleyDevelopment/tekton/actions/workflows/ci.yml/badge.svg
-[Latest Version]: https://img.shields.io/crates/v/tekton.svg
+
+[workflow]: https://github.com/OkelleyDevelopment/tekton/actions/workflows/ci.yml/badge.svg
+[latest version]: https://img.shields.io/crates/v/tekton.svg
 [crates.io]: https://crates.io/crates/tekton
-[Rustc Version 1.66+]: https://img.shields.io/badge/rustc-1.66+-blue.svg
+[rustc version 1.66+]: https://img.shields.io/badge/rustc-1.66+-blue.svg
 
 Author(s): Nicholas O'Kelley
 
@@ -15,15 +17,13 @@ NOTE: This is still a tool in 'alpha' and might rapidly change, though notice wi
 
 I needed a tool to speed up the time I spent reviewing snippets on the [`friendly-snippet`](https://github.com/rafamadriz/friendly-snippets) project.
 
-
 The goals of such a tool are:
 
-- Sort many files **blazingly fast** 
+- Sort many files **blazingly fast**
 - (Ideally) Sort alphabetically **blazingly fast**
 - Convert between snipmate and friendly-snippets (json) formats **blazingly** ... **fast**
 
 ---
-
 
 ## Installation and Usage
 
@@ -33,31 +33,33 @@ The goals of such a tool are:
 
 ### For source builds
 
-From the project root: 
+From the project root:
 
 - `cargo install --path ./`
 
 ### Usage
 
-**To convert**: 
+**To convert**:
 
 - `tekton convert <INPUT_FILENAME> <OUTPUT_FILENAME>`
 
-> Note: 
+> Note:
+>
 > - Conversion supports bidirectional conversion between Snipmate (`*.snippet`) and JSON (`*.json`) snippets
 > - Mapping is based on the input file
 
-
-**To sort**: 
+**To sort**:
 
 - General format: `tekton sort <INPUT_FILENAME> [INTERACTIVE] [CRAWL]`
-    - To sort a single file 
-        - `tekton sort <INPUT_NAME>`
-    - To sort a directory: `tekton sort <INPUT_NAME> no true`
+  - To sort a single file
+    - `tekton sort <INPUT_NAME>`
+  - To sort a directory: `tekton sort <INPUT_NAME> no true`
 
-> Note: 
+> Note:
+>
 > - `INTERACTIVE` should be the string `yes` if the user wants to fix any errors during the sort.
->   - Leaving  this off will simply mean an error report is displayed on screen
+>
+>   - Leaving this off will simply mean an error report is displayed on screen
 >
 > - `CRAWL` must be present to recursively walk the directories for snippets
 >   - Any text present will result in a crawl, though `true` looks better.
@@ -78,23 +80,21 @@ From the project root:
 
 ![Sorting](./images/sorting_json.png)
 
-
-
 ---
 
 ## Current Limitations
 
 1. The conversion doesn't process in large batches of files like the sort. This is intentional as conversions between formats should be isolated and limited in scope.
-    - This can be automated via other scripting means (Bash, Python, Go, etc).
+   - This can be automated via other scripting means (Rust, Go, Python, etc).
 2. Snippet files with an array in the `prefix` field (even if it is just one) will convert all the snippets in the file to then have their snippets inserted into an array too.
-    - From testing, this doesn't seem to impact performance at all in terms of the snippets loading in the snippet loading tooling.
-    - At this time, I also can't do a whole lot here.
 
-3. Currently do not sort Snipmate snippets. 
-    - This one will more than likely be the next thing I add
+   - **Note**: I am working on writing a custom `Serialize` and `Deserialize` implementation to handle clean up the serialization for one element.
+
+3. Currently do not sort Snipmate snippets.
+   - This one will more than likely be the next thing I add
 
 ---
-    
+
 ## Acknowledgements
 
-- My impatience for doing this by hand 
+- My impatience for doing this by hand
