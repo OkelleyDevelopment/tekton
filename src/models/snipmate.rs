@@ -68,55 +68,55 @@ impl Snipmate {
 #[cfg(test)]
 mod tests {
     use super::Snipmate;
-    
+
     #[test]
-fn test_vim_snippet_creation_with_description() {
-    let snip = Snipmate::new(
-        String::from("test"),
-        Vec::new(),
-        Some(String::from("An epic test description")),
-    );
-    assert_eq!(snip.prefix, "test".to_string());
-    assert_eq!(snip.body.len(), 0);
-    assert_eq!(
-        snip.description,
-        Some("An epic test description".to_string())
-    );
-}
+    fn test_vim_snippet_creation_with_description() {
+        let snip = Snipmate::new(
+            String::from("test"),
+            Vec::new(),
+            Some(String::from("An epic test description")),
+        );
+        assert_eq!(snip.prefix, "test".to_string());
+        assert_eq!(snip.body.len(), 0);
+        assert_eq!(
+            snip.description,
+            Some("An epic test description".to_string())
+        );
+    }
 
-#[test]
-fn test_vim_snippet_creation_without_description() {
-    let snip = Snipmate::new(String::from("test"), Vec::new(), None);
-    assert_eq!(snip.prefix, "test".to_string());
-    assert_eq!(snip.body.len(), 0);
-    assert_eq!(snip.description, None);
-}
+    #[test]
+    fn test_vim_snippet_creation_without_description() {
+        let snip = Snipmate::new(String::from("test"), Vec::new(), None);
+        assert_eq!(snip.prefix, "test".to_string());
+        assert_eq!(snip.body.len(), 0);
+        assert_eq!(snip.description, None);
+    }
 
-#[test]
-fn test_vim_snippet_display() {
-    let mut snip = Snipmate::new(
-        String::from("test"),
-        Vec::new(),
-        Some(String::from("An epic test description")),
-    );
-    snip.body.push(String::from("A line of snippet"));
-    let string_rep = snip.display();
+    #[test]
+    fn test_vim_snippet_display() {
+        let mut snip = Snipmate::new(
+            String::from("test"),
+            Vec::new(),
+            Some(String::from("An epic test description")),
+        );
+        snip.body.push(String::from("A line of snippet"));
+        let string_rep = snip.display();
 
-    assert_eq!(
-        string_rep,
-        String::from("snippet test An epic test description\n\tA line of snippet\n")
-    );
-}
+        assert_eq!(
+            string_rep,
+            String::from("snippet test An epic test description\n\tA line of snippet\n")
+        );
+    }
 
-#[test]
-fn test_vim_snippet_display_without_description() {
-    let mut snip = Snipmate::new(String::from("test"), Vec::new(), None);
-    snip.body.push(String::from("A line of snippet"));
-    let string_rep = snip.display();
+    #[test]
+    fn test_vim_snippet_display_without_description() {
+        let mut snip = Snipmate::new(String::from("test"), Vec::new(), None);
+        snip.body.push(String::from("A line of snippet"));
+        let string_rep = snip.display();
 
-    assert_eq!(
-        string_rep,
-        String::from("snippet test\n\tA line of snippet\n")
-    );
-}
+        assert_eq!(
+            string_rep,
+            String::from("snippet test\n\tA line of snippet\n")
+        );
+    }
 }

@@ -94,7 +94,6 @@ fn friendly_tekton(snippet: Snipmate) -> FriendlySnippetBody {
     FriendlySnippetBody::new(prefix, body, description)
 }
 
-
 /// Helper function to read the JSON as a `FriendlySnippets` struct
 ///
 /// Arguments:
@@ -513,7 +512,6 @@ mod tests {
         }
     }
 
-
     #[test]
     fn test_friendly_tekton() {
         let input: Vec<String> = vec![
@@ -524,25 +522,32 @@ mod tests {
             "    with several".to_string(),
             "    lines.".to_string(),
         ];
-    
+
         let snippets = build_snippets_from_file(input);
-    
+
         assert_eq!(snippets.len(), 2);
         let vsnip = snippets[0].clone();
-    
-        let mut friendlies: FriendlySnippets = FriendlySnippets { snippets: HashMap::new() };
-    
+
+        let mut friendlies: FriendlySnippets = FriendlySnippets {
+            snippets: HashMap::new(),
+        };
+
         let mut names = vec!["test2".to_string(), "test1".to_string()];
         for snippet in snippets {
             let body = friendly_tekton(snippet);
-            // Ugly, will return to clean up ... eventually 
-            friendlies.snippets.insert(names.pop().unwrap().to_string(), body);
+            // Ugly, will return to clean up ... eventually
+            friendlies
+                .snippets
+                .insert(names.pop().unwrap().to_string(), body);
         }
-    
+
         assert_eq!(friendlies.snippets.len(), 2);
         let fsnip = friendlies.snippets.get("test1").unwrap();
         assert_eq!(fsnip.prefix, Some(vsnip.prefix));
-        assert_eq!(fsnip.body.concat(), vsnip.body.concat().strip_prefix("   ").unwrap());
+        assert_eq!(
+            fsnip.body.concat(),
+            vsnip.body.concat().strip_prefix("   ").unwrap()
+        );
         assert_eq!(fsnip.description, vsnip.description);
     }
 }
