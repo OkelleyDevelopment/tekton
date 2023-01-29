@@ -11,7 +11,7 @@ Author(s): Nicholas O'Kelley
 
 Date started: 2022-08-28
 
-NOTE: This is still a tool in 'alpha' and might rapidly change, though notice will be made if that happens.
+**Note**: The code on the repo represents the work done for `v0.2.0` which will be published to crates.io soon.
 
 ## Motivation
 
