@@ -49,24 +49,10 @@ pub fn build_friendly_string(friendlies: FriendlySnippets) -> Result<String, Tek
 pub fn convert_snipmate_to_friendlysnippets(snips: Vec<Snipmate>) -> FriendlySnippets {
     let mut count: usize = 0;
     let target = snips.len();
-    let re = Regex::new(r##"\\""##).unwrap();
     let mut friendly_handle: FriendlySnippets = FriendlySnippets::new();
 
     for snippet in snips {
-        let prefix: String = snippet.prefix;
-        let mut body: Vec<String> = snippet.body;
-        let mut description: String = String::new();
-
-        // NOTE: Remove the whitespace for the very first line of the snippet
-        if let Some(first_line) = body.get(0) {
-            body.insert(0, first_line.trim_start().to_string());
-        }
-
-        if let Some(descrip) = &snippet.description {
-            description = re.replace_all(descrip, "").to_string();
-        }
-
-        let friendly_body = FriendlySnippetBody::new(Some(prefix), body, Some(description));
+        let friendly_body = friendly_tekton(snippet);
 
         match serde_json::to_string_pretty(&friendly_body) {
             Ok(snip) => {
@@ -86,6 +72,28 @@ pub fn convert_snipmate_to_friendlysnippets(snips: Vec<Snipmate>) -> FriendlySni
     }
     friendly_handle
 }
+
+fn friendly_tekton(snippet: Snipmate) -> FriendlySnippetBody {
+    let prefix: Option<String> = Some(snippet.prefix);
+    let mut body: Vec<String> = snippet.body;
+    let mut description: Option<String> = None;
+    let re = Regex::new(r##"\\""##).unwrap();
+
+    // NOTE: Remove the whitespace for the very first line of the snippet
+    body.reverse();
+    if let Some(first_line) = body.pop() {
+        let temp = first_line.trim_start().to_string();
+        body.reverse();
+        body.insert(0, temp);
+    }
+
+    if let Some(descrip) = &snippet.description {
+        description = Some(re.replace_all(descrip, "").to_string());
+    }
+
+    FriendlySnippetBody::new(prefix, body, description)
+}
+
 
 /// Helper function to read the JSON as a `FriendlySnippets` struct
 ///
@@ -252,6 +260,7 @@ pub fn retrieve_body(val: &serde_json::Value) -> Vec<String> {
     let mut body: Vec<String> = Vec::new();
     if let Some(lines) = val.as_array() {
         for line in lines.iter() {
+            println!("Pushed value {} ", line);
             body.push(line.as_str().unwrap_or("").to_string());
         }
     } else {
@@ -502,5 +511,38 @@ mod tests {
                 assert_eq!(e, TektonError::Reason(MISSING_PREFIX.into()));
             }
         }
+    }
+
+
+    #[test]
+    fn test_friendly_tekton() {
+        let input: Vec<String> = vec![
+            "snippet test".to_string(),
+            "   test snippet".to_string(),
+            "snippet test2 an epic description".to_string(),
+            "    a second snippet".to_string(),
+            "    with several".to_string(),
+            "    lines.".to_string(),
+        ];
+    
+        let snippets = build_snippets_from_file(input);
+    
+        assert_eq!(snippets.len(), 2);
+        let vsnip = snippets[0].clone();
+    
+        let mut friendlies: FriendlySnippets = FriendlySnippets { snippets: HashMap::new() };
+    
+        let mut names = vec!["test2".to_string(), "test1".to_string()];
+        for snippet in snippets {
+            let body = friendly_tekton(snippet);
+            // Ugly, will return to clean up ... eventually 
+            friendlies.snippets.insert(names.pop().unwrap().to_string(), body);
+        }
+    
+        assert_eq!(friendlies.snippets.len(), 2);
+        let fsnip = friendlies.snippets.get("test1").unwrap();
+        assert_eq!(fsnip.prefix, Some(vsnip.prefix));
+        assert_eq!(fsnip.body.concat(), vsnip.body.concat().strip_prefix("   ").unwrap());
+        assert_eq!(fsnip.description, vsnip.description);
     }
 }
