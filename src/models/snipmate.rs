@@ -3,7 +3,7 @@
 use regex::Regex;
 
 /// A structure representing the vim-snippet/ Snipmate format
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Snipmate {
     /// The trigger for the snippet
     pub prefix: String,
@@ -65,7 +65,11 @@ impl Snipmate {
     }
 }
 
-#[test]
+#[cfg(test)]
+mod tests {
+    use super::Snipmate;
+    
+    #[test]
 fn test_vim_snippet_creation_with_description() {
     let snip = Snipmate::new(
         String::from("test"),
@@ -114,4 +118,5 @@ fn test_vim_snippet_display_without_description() {
         string_rep,
         String::from("snippet test\n\tA line of snippet\n")
     );
+}
 }
