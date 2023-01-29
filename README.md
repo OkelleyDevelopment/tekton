@@ -68,13 +68,13 @@ From the project root:
 
 - Conversion from Snipmate to `JSON`
 
-![json-bay-bee]()
+![json-bay-bee](./images/snipmate_to_json.png)
 
 - Conversion from the `JSON` snippets to Snipmate
 
 ![Conversion](./images/converting_json_to_snipmate.png)
 
-- Sorting `friendly-snippets` 
+- Sorting `friendly-snippets`, **blazingly fast** , with interactive mode off and directory crawling on.
 
 ![Sorting](./images/sorting_json.png)
 
@@ -88,8 +88,10 @@ From the project root:
     - This can be automated via other scripting means (Bash, Python, Go, etc).
 2. Snippet files with an array in the `prefix` field (even if it is just one) will convert all the snippets in the file to then have their snippets inserted into an array too.
     - From testing, this doesn't seem to impact performance at all in terms of the snippets loading in the snippet loading tooling.
+    - At this time, I also can't do a whole lot here.
 
-3. Currently do not sort Snipmate snippets.
+3. Currently do not sort Snipmate snippets. 
+    - This one will more than likely be the next thing I add
 
 ---
     
