@@ -74,6 +74,8 @@ pub fn write_to_file(output_name: String, finished: String) {
 pub fn crawl_files(path: String, crawl: Option<String>) -> Vec<PathBuf> {
     let mut files: Vec<PathBuf> = Vec::new();
     if crawl.is_some() {
+        // This for loop is from the WalkDir documentation, I claim no credit
+        // with respect to this.
         for file in WalkDir::new(path).into_iter().filter_map(|file| file.ok()) {
             if file.metadata().unwrap().is_file() {
                 files.push(file.path().to_path_buf());
