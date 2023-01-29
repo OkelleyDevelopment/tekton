@@ -33,10 +33,9 @@ pub fn composer(
             Ok(lines) => compose_friendly_snippets(lines),
             Err(e) => Err(TektonError::Reason(e.to_string())),
         },
-        ("json", "snippet") => match fs::read_to_string(fname) {
-            Ok(lines) => compose_snipmate_snippets(read_in_json_snippets(&lines, interactive)?),
-            Err(e) => Err(TektonError::Reason(e.to_string())),
-        },
+        ("json", "snippet") => {
+            compose_snipmate_snippets(read_in_json_snippets(fname, interactive)?)
+        }
         ("json", "tekton-sort") => {
             sort_friendly_snippets(read_in_json_snippets(fname, interactive)?)
         }

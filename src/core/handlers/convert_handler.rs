@@ -16,6 +16,7 @@ pub fn convert_handler(convert: ConversionCommand) -> Result<(), TektonError> {
         get_filetype(&convert.output_filename).unwrap(),
     );
     let output = convert.output_filename.to_string();
+    println!("Output name: {}", output);
     // Conversion is always interactive
     let snippets = composer(&convert.input_filename, file_extensions, INTERACTIVE)?;
     write_to_file(output.clone(), snippets);
