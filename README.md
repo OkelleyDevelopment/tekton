@@ -1,5 +1,5 @@
 # tekton   [![Latest Version]][crates.io] ![Workflow] ![Rustc Version 1.66+]
-
+---
 [Workflow]: https://github.com/OkelleyDevelopment/tekton/actions/workflows/ci.yml/badge.svg
 [Latest Version]: https://img.shields.io/crates/v/tekton.svg
 [crates.io]: https://crates.io/crates/tekton
@@ -22,10 +22,20 @@ The goals of such a tool are:
 - (Ideally) Sort alphabetically **blazingly fast**
 - Convert between snipmate and friendly-snippets (json) formats **blazingly** ... **fast**
 
+---
+
 
 ## Installation and Usage
 
+### For published versions
+
 - `cargo install tekton`
+
+### For source builds
+
+From the project root: 
+
+- `cargo install --path ./`
 
 ### Usage
 
@@ -52,7 +62,25 @@ The goals of such a tool are:
 > - `CRAWL` must be present to recursively walk the directories for snippets
 >   - Any text present will result in a crawl, though `true` looks better.
 
+---
 
+## Demos
+
+- Conversion from Snipmate to `JSON`
+
+![json-bay-bee](./images/snipmate_to_json.png)
+
+- Conversion from the `JSON` snippets to Snipmate
+
+![Conversion](./images/converting_json_to_snipmate.png)
+
+- Sorting `friendly-snippets`, **blazingly fast** , with interactive mode off and directory crawling on.
+
+![Sorting](./images/sorting_json.png)
+
+
+
+---
 
 ## Current Limitations
 
@@ -60,8 +88,12 @@ The goals of such a tool are:
     - This can be automated via other scripting means (Bash, Python, Go, etc).
 2. Snippet files with an array in the `prefix` field (even if it is just one) will convert all the snippets in the file to then have their snippets inserted into an array too.
     - From testing, this doesn't seem to impact performance at all in terms of the snippets loading in the snippet loading tooling.
+    - At this time, I also can't do a whole lot here.
 
-3. Currently do not sort Snipmate snippets.
+3. Currently do not sort Snipmate snippets. 
+    - This one will more than likely be the next thing I add
+
+---
     
 ## Acknowledgements
 
