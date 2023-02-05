@@ -138,57 +138,63 @@ where
     }
 }
 
-#[test]
-fn test_empty_string_on_extension() {
-    let filename = String::from("");
-    let result = get_filetype(&filename);
-    assert_eq!(result, None);
-}
+#[cfg(test)]
+mod tests {
 
-#[test]
-fn test_extension() {
-    let filename = String::from("example.json");
-    let result = get_filetype(&filename);
-    assert_ne!(result, None);
-    assert_eq!(result.unwrap(), "json");
-}
+    use super::get_filetype;
 
-#[test]
-fn test_long_filename_extension() {
-    let filename = String::from("long_file_name_example.json");
-    let result = get_filetype(&filename);
-    assert_ne!(result, None);
-    assert_eq!(result.unwrap(), "json");
-}
+    #[test]
+    fn test_empty_string_on_extension() {
+        let filename = String::from("");
+        let result = get_filetype(&filename);
+        assert_eq!(result, None);
+    }
 
-#[test]
-fn test_extension_on_snippet() {
-    let filename = String::from("example.snippet");
-    let result = get_filetype(&filename);
-    assert_ne!(result, None);
-    assert_eq!(result.unwrap(), "snippet");
-}
+    #[test]
+    fn test_extension() {
+        let filename = String::from("example.json");
+        let result = get_filetype(&filename);
+        assert_ne!(result, None);
+        assert_eq!(result.unwrap(), "json");
+    }
 
-#[test]
-fn test_filename_with_parens_extension() {
-    let filename = String::from("exam(file)ple.json");
-    let result = get_filetype(&filename);
-    assert_ne!(result, None);
-    assert_eq!(result.unwrap(), "json");
-}
+    #[test]
+    fn test_long_filename_extension() {
+        let filename = String::from("long_file_name_example.json");
+        let result = get_filetype(&filename);
+        assert_ne!(result, None);
+        assert_eq!(result.unwrap(), "json");
+    }
 
-#[test]
-fn test_filename_with_braces_extension() {
-    let filename = String::from("exam{file}ple.json");
-    let result = get_filetype(&filename);
-    assert_ne!(result, None);
-    assert_eq!(result.unwrap(), "json");
-}
+    #[test]
+    fn test_extension_on_snippet() {
+        let filename = String::from("example.snippet");
+        let result = get_filetype(&filename);
+        assert_ne!(result, None);
+        assert_eq!(result.unwrap(), "snippet");
+    }
 
-#[test]
-fn test_filename_with_brackets_extension() {
-    let filename = String::from("exam[file]ple.json");
-    let result = get_filetype(&filename);
-    assert_ne!(result, None);
-    assert_eq!(result.unwrap(), "json");
+    #[test]
+    fn test_filename_with_parens_extension() {
+        let filename = String::from("exam(file)ple.json");
+        let result = get_filetype(&filename);
+        assert_ne!(result, None);
+        assert_eq!(result.unwrap(), "json");
+    }
+
+    #[test]
+    fn test_filename_with_braces_extension() {
+        let filename = String::from("exam{file}ple.json");
+        let result = get_filetype(&filename);
+        assert_ne!(result, None);
+        assert_eq!(result.unwrap(), "json");
+    }
+
+    #[test]
+    fn test_filename_with_brackets_extension() {
+        let filename = String::from("exam[file]ple.json");
+        let result = get_filetype(&filename);
+        assert_ne!(result, None);
+        assert_eq!(result.unwrap(), "json");
+    }
 }
