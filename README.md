@@ -88,7 +88,7 @@ From the project root:
    - This can be automated via other scripting means (Rust, Go, Python, etc).
 2. Snippet files with an array in the `prefix` field (even if it is just one) will convert all the snippets in the file to then have their snippets inserted into an array too.
 
-   - **Note**: I am working on writing a custom `Serialize` and `Deserialize` implementation to handle clean up the serialization for one element.
+   - **Note**: I am partially working on writing a custom `Serialize` and `Deserialize` implementation to handle clean up the serialization for one element, though that will be tied to a future update.
 
 3. Currently do not sort Snipmate snippets.
    - This was outside the scope, but might be something I consider in the future.
