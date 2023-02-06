@@ -1,3 +1,6 @@
+//! The entry point for sorting of snippets 
+//! which at this time assumes the sorting of JSON.
+
 use std::path::PathBuf;
 
 use crate::{
@@ -71,15 +74,23 @@ pub fn sort_handler(sort: SortCommand) -> Result<(), TektonError> {
     Ok(())
 }
 
+// The Configuration manager for the sorting
+// utility.
 struct SortConfigManager {
+    // Files sorted
     pub file_count: usize,
+    // Boolean for user input
     pub is_interactive: bool,
+    // Boolean for recursive descent into directories
     pub is_crawling: bool,
+    // A boolean for path being a directory
     pub is_path_directory: bool,
+    // Flag to determine if the corrections were successful
     pub corrections_passed: bool,
 }
 
 impl SortConfigManager {
+    /// Function to create a new manager
     pub fn new(is_crawling: bool) -> Self {
         Self {
             file_count: 0,
@@ -89,7 +100,7 @@ impl SortConfigManager {
             corrections_passed: true,
         }
     }
-
+    /// Method to set bool flag
     pub fn set_interactive(&mut self, input: Option<String>) {
         self.is_interactive = match input {
             Some(val) => val == "yes",
