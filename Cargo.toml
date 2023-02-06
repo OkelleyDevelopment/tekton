@@ -1,6 +1,6 @@
 [package]
 name = "tekton"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 authors = ["Nicholas O'Kelley"]
 repository = "https://github.com/OkelleyDevelopment/tekton"
