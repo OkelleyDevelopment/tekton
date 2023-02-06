@@ -11,8 +11,6 @@ Author(s): Nicholas O'Kelley
 
 Date started: 2022-08-28
 
-**Note**: The code on the repo represents the work done for `v0.2.0` which will be published to crates.io soon.
-
 ## Motivation
 
 I needed a tool to speed up the time I spent reviewing snippets on the [`friendly-snippet`](https://github.com/rafamadriz/friendly-snippets) project.
