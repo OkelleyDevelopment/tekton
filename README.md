@@ -91,7 +91,7 @@ From the project root:
    - **Note**: I am working on writing a custom `Serialize` and `Deserialize` implementation to handle clean up the serialization for one element.
 
 3. Currently do not sort Snipmate snippets.
-   - This one will more than likely be the next thing I add
+   - This was outside the scope, but might be something I consider in the future.
 
 ---
 
