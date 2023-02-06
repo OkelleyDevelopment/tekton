@@ -259,7 +259,6 @@ pub fn retrieve_body(val: &serde_json::Value) -> Vec<String> {
     let mut body: Vec<String> = Vec::new();
     if let Some(lines) = val.as_array() {
         for line in lines.iter() {
-            println!("Pushed value {} ", line);
             body.push(line.as_str().unwrap_or("").to_string());
         }
     } else {
