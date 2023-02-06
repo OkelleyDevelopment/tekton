@@ -51,8 +51,7 @@ From the project root:
 **To sort**:
 
 - General format: `tekton sort <INPUT_FILENAME> [INTERACTIVE] [CRAWL]`
-  - To sort a single file
-    - `tekton sort <INPUT_NAME>`
+  - To sort a single file: `tekton sort <INPUT_NAME>`
   - To sort a directory: `tekton sort <INPUT_NAME> no true`
 
 > Note:
